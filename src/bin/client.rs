@@ -4,26 +4,27 @@ use sdex_vpn::vpn::client;
 #[derive(Parser)]
 #[command(name = "sdex-client", about = "Klient VPN SDEx")]
 struct Args {
-    /// Adres serwera (IP:port)
+    /// Server address (IP:port)
     #[arg(short, long)]
     server: String,
 
-    /// Nazwa interfejsu TUN
+    /// TUN interface name
     #[arg(short, long, default_value = "tun0")]
     tun_name: String,
 
-    /// Adres IP dla interfejsu TUN (klient)
+    /// TUN interface address
     #[arg(short, long, default_value = "10.0.0.2")]
     tun_ip: String,
 
+    /// Partial route
     #[arg(long)]
     route: Vec<String>,
-    /// Pierwszy klucz sesyjny
 
+    /// First session key
     #[arg(long, default_value = "key1")]
     key1: String,
 
-    /// Drugi klucz sesyjny
+    /// Second session key
     #[arg(long, default_value = "key2")]
     key2: String,
 }
