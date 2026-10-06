@@ -20,6 +20,7 @@ pub fn run(
     let tun = DeviceBuilder::new()
         .name(tun_name)
         .ipv4(tun_ip, 24, None)
+        .multi_queue(true)
         .build_sync()?;
     println!("[client] TUN created");
 

@@ -16,13 +16,10 @@ pub fn run(
     println!("[server] listening on {}", listen);
     println!("[server] TUN {} with IP {}", tun_name, tun_ip);
 
-    let multi_queue = std::env::var("SDEX_NO_MULTI_QUEUE").is_err();
-    println!("[server] TUN multi_queue = {}", multi_queue);
-
     let tun = DeviceBuilder::new()
         .name(tun_name)
         .ipv4(tun_ip, 24, None)
-        .multi_queue(multi_queue)
+        .multi_queue(true)
         .build_sync()?;
 
     println!("[server] TUN created");
