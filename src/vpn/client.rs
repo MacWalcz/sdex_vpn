@@ -22,10 +22,11 @@ pub fn run(
         .ipv4(tun_ip, 24, None)
         .multi_queue(true)
         .build_sync()?;
+
     println!("[client] TUN created");
 
     let socket = UdpSocket::bind("0.0.0.0:0")?;
-    socket.connect(server)?;
+
     println!("[client] UDP socket connected to {}", server);
 
     let tun_read = tun.try_clone()?;
@@ -34,6 +35,28 @@ pub fn run(
 
     let key1 = first_key.to_vec();
     let key2 = second_key.to_vec();
+
+    // Routing setup
+    let rt = tokio::runtime::Runtime::new()?;
+    let full_tunnel = routes.is_empty();
+    let server_ip: Ipv4Addr = server.split(':').next().unwrap().parse()?;
+
+    println!("[client] setting up routes (full_tunnel = {})", full_tunnel);
+    rt.block_on(async {
+        let (gw, oif) = get_default_gateway().await?;
+        add_host_route(server_ip, gw, oif).await?;
+
+        if full_tunnel {
+            add_default_route(tun_name).await?;
+        }
+        for r in &routes {
+            add_route(tun_name, r).await?;
+        }
+        Ok::<_, Box<dyn std::error::Error>>(())
+    })?;
+    println!("[client] routes set up");
+
+    socket.connect(server)?;
 
     // Thread 1: UDP -> decrypt -> TUN
     let key1_rx = key1.clone();
@@ -59,45 +82,27 @@ pub fn run(
         }
     });
 
-    // Routing setup
-    let rt = tokio::runtime::Runtime::new()?;
-    let full_tunnel = routes.is_empty();
-    let server_ip: Ipv4Addr = server.split(':').next().unwrap().parse()?;
-
-    println!("[client] setting up routes (full_tunnel = {})", full_tunnel);
-    rt.block_on(async {
-        let (gw, oif) = get_default_gateway().await?;
-        add_host_route(server_ip, gw, oif).await?;
-
-        if full_tunnel {
-            add_default_route(tun_name).await?;
-        }
-        for r in &routes {
-            add_route(tun_name, r).await?;
-        }
-        Ok::<_, Box<dyn std::error::Error>>(())
-    })?;
-    println!("[client] routes set up");
-
     // Main thread: TUN -> encrypt -> UDP
     let tun = tun;
     let mut buf = [0u8; 65535];
     println!("[client][tx] main thread started, waiting for packets from TUN");
+    let mut i = 1;
     loop {
         let n = tun.recv(&mut buf)?;
         if n == 0 {
-            println!("[client][tx] TUN returned 0 bytes");
+            println!("[client][tx][{}] TUN returned 0 bytes", &i);
             continue;
         }
-        println!("[client][tx] {} bytes from TUN", n);
+        println!("[client][tx][{}] {} bytes from TUN",&i, n);
 
         let encrypted = sdex::encrypt(&buf[..n], &key1, &key2);
-        println!("[client][tx] encrypted to {} bytes", encrypted.len());
+        println!("[client][tx][{}] encrypted to {} bytes",&i ,encrypted.len());
 
         if let Err(e) = socket.send(&encrypted) {
-            eprintln!("[client][tx] send: {}", e);
+            eprintln!("[client][tx][{}] send: {}",&i, e);
         } else {
-            println!("[client][tx] sent to server");
+            println!("[client][tx][{}] sent to server",&i);
         }
+        i += 1;
     }
 }

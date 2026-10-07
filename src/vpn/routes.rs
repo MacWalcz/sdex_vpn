@@ -96,3 +96,4 @@ pub async fn add_route(iface: &str, cidr: &str) -> Result<(), Box<dyn std::error
     println!("[routes] Added route {} trough {}", cidr, iface);
     Ok(())
 }
+
