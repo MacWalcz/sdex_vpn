@@ -1,5 +1,6 @@
 use std::net::{SocketAddr, ToSocketAddrs};
 use std::sync::Arc;
+use std::thread;
 
 use tokio::sync::Mutex;
 use tun_rs::DeviceBuilder;
@@ -20,46 +21,62 @@ pub fn run(
     let multi_queue = std::env::var("SDEX_NO_MULTI_QUEUE")
         .map(|v| !matches!(v.to_lowercase().as_str(), "1" | "true" | "yes"))
         .unwrap_or(true);
-    println!("[client] multi_queue = {}", multi_queue);
-    let main_tun = DeviceBuilder::new()
-        .name(tun_name)
-        .ipv4(tun_ip, 24, None)
-        .multi_queue(multi_queue)
-        .build_async()?;
+    println!("[server] multi_queue = {}", multi_queue);
 
-    let rt = tokio::runtime::Builder::new_multi_thread()
-        .worker_threads(num_threads)
-        .enable_all()
-        .build()?;
+    let main_tun = {
+        let rt = tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()?;
+        let _guard = rt.enter();
+        Arc::new(
+            DeviceBuilder::new()
+                .name(tun_name)
+                .ipv4(tun_ip, 24, None)
+                .multi_queue(multi_queue)
+                .build_async()?,
+        )
+    };
+    println!("[server] TUN created");
 
     let client_addrs: Arc<Mutex<Vec<Option<SocketAddr>>>> =
         Arc::new(Mutex::new(vec![None; num_threads]));
 
-    rt.block_on(async move {
-        let mut tasks = Vec::with_capacity(num_threads);
+    let mut handles = Vec::with_capacity(num_threads);
 
-        for worker_id in 0..num_threads {
-            let tun = main_tun.try_clone()?;
-            let key1 = first_key.to_vec();
-            let key2 = second_key.to_vec();
-            let listen = listen.to_string();
-            let client_addrs = Arc::clone(&client_addrs);
+    for worker_id in 0..num_threads {
+        let main_tun = Arc::clone(&main_tun);
+        let key1 = first_key.to_vec();
+        let key2 = second_key.to_vec();
+        let listen = listen.to_string();
+        let client_addrs = Arc::clone(&client_addrs);
 
-            let task = tokio::spawn(async move {
+        let handle = thread::spawn(move || {
+            let rt = tokio::runtime::Builder::new_current_thread()
+                .enable_all()
+                .build()
+                .expect("runtime");
+
+            // 👇 try_clone POZA block_on, w kontekście runtime
+            let tun = {
+                let _guard = rt.enter();
+                main_tun.try_clone().expect("try_clone")
+            };
+
+            // 👇 block_on dostaje gotowy tun, nie pożycza rt do async move
+            rt.block_on(async move {
                 run_worker(tun, &listen, key1, key2, worker_id, client_addrs).await;
             });
-            tasks.push(task);
-        }
+        });
+        handles.push(handle);
+    }
 
-        println!("[server] {} workers started", num_threads);
+    println!("[server] {} workers started", num_threads);
 
-        for (i, t) in tasks.into_iter().enumerate() {
-            if let Err(e) = t.await {
-                eprintln!("[server] worker {} panicked: {:?}", i, e);
-            }
+    for (i, h) in handles.into_iter().enumerate() {
+        if let Err(e) = h.join() {
+            eprintln!("[server] worker {} panicked: {:?}", i, e);
         }
-        Ok::<_, Box<dyn std::error::Error>>(())
-    })?;
+    }
 
     Ok(())
 }
@@ -72,7 +89,6 @@ async fn run_worker(
     worker_id: usize,
     client_addrs: Arc<Mutex<Vec<Option<SocketAddr>>>>,
 ) {
-    // Każdy worker ma własny socket na tym samym porcie (SO_REUSEPORT)
     let socket = bind_reuseport(listen).await.expect("bind UDP");
 
     let mut tun_buf = vec![0u8; 65535];
@@ -82,7 +98,6 @@ async fn run_worker(
 
     loop {
         tokio::select! {
-            // UDP -> deszyfruj -> TUN
             result = socket.recv_from(&mut udp_buf) => {
                 match result {
                     Ok((n, src)) => {
@@ -101,7 +116,6 @@ async fn run_worker(
                     }
                 }
             }
-            // TUN -> szyfruj -> UDP
             result = tun.recv(&mut tun_buf) => {
                 match result {
                     Ok(n) if n > 0 => {
