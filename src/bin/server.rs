@@ -23,6 +23,10 @@ struct Args {
     /// Drugi klucz sesyjny
     #[arg(long, default_value = "key2")]
     key2: String,
+
+    /// Number of threads
+    #[arg(long, default_value_t = num_cpus::get())]
+    threads: usize,
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -33,5 +37,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         &args.tun_ip,
         args.key1.as_bytes(),
         args.key2.as_bytes(),
+        args.threads,
     )
 }

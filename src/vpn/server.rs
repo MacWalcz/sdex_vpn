@@ -1,7 +1,7 @@
-use std::net::{SocketAddr, UdpSocket};
-use std::sync::{Arc, Mutex};
-use std::thread;
+use std::net::{SocketAddr, ToSocketAddrs};
+use std::sync::Arc;
 
+use tokio::sync::Mutex;
 use tun_rs::DeviceBuilder;
 
 use crate::sdex;
@@ -12,83 +12,132 @@ pub fn run(
     tun_ip: &str,
     first_key: &[u8],
     second_key: &[u8],
+    num_threads: usize,
 ) -> Result<(), Box<dyn std::error::Error>> {
     println!("[server] listening on {}", listen);
-    println!("[server] TUN {} with IP {}", tun_name, tun_ip);
+    println!("[server] threads = {}", num_threads);
 
-    let tun = DeviceBuilder::new()
+    let multi_queue = std::env::var("SDEX_NO_MULTI_QUEUE")
+        .map(|v| !matches!(v.to_lowercase().as_str(), "1" | "true" | "yes"))
+        .unwrap_or(true);
+
+    let main_tun = DeviceBuilder::new()
         .name(tun_name)
         .ipv4(tun_ip, 24, None)
-        .multi_queue(true)
-        .build_sync()?;
+        .multi_queue(multi_queue)
+        .build_async()?;
 
-    println!("[server] TUN created");
+    let rt = tokio::runtime::Builder::new_multi_thread()
+        .worker_threads(num_threads)
+        .enable_all()
+        .build()?;
 
-    let socket = UdpSocket::bind(listen)?;
-    println!("[server] UDP socket bound on {}", listen);
+    let client_addrs: Arc<Mutex<Vec<Option<SocketAddr>>>> =
+        Arc::new(Mutex::new(vec![None; num_threads]));
 
-    let tun_read = tun.try_clone()?;
-    let socket_read = socket.try_clone()?;
-    println!("[server] descriptors cloned, starting threads");
+    rt.block_on(async move {
+        let mut tasks = Vec::with_capacity(num_threads);
 
-    let key1 = first_key.to_vec();
-    let key2 = second_key.to_vec();
+        for worker_id in 0..num_threads {
+            let tun = main_tun.try_clone()?;
+            let key1 = first_key.to_vec();
+            let key2 = second_key.to_vec();
+            let listen = listen.to_string();
+            let client_addrs = Arc::clone(&client_addrs);
 
-    let client_addr: Arc<Mutex<Option<SocketAddr>>> = Arc::new(Mutex::new(None));
+            let task = tokio::spawn(async move {
+                run_worker(tun, &listen, key1, key2, worker_id, client_addrs).await;
+            });
+            tasks.push(task);
+        }
 
-    // Thread 1: UDP -> decrypt -> TUN
-    let client_addr_rx = Arc::clone(&client_addr);
-    let key1_rx = key1.clone();
-    let key2_rx = key2.clone();
-    thread::spawn(move || {
-        let tun = tun_read;
-        let mut buf = [0u8; 65535];
-        println!("[server][rx] UDP receive thread started");
-        loop {
-            match socket_read.recv_from(&mut buf) {
-                Ok((amt, src)) => {
-                    println!("[server][rx] {} bytes UDP from {}", amt, src);
-                    *client_addr_rx.lock().unwrap() = Some(src);
+        println!("[server] {} workers started", num_threads);
 
-                    let decrypted = sdex::decrypt(&buf[..amt], &key1_rx, &key2_rx);
-                    println!("[server][rx] decrypted to {} bytes", decrypted.len());
+        for (i, t) in tasks.into_iter().enumerate() {
+            if let Err(e) = t.await {
+                eprintln!("[server] worker {} panicked: {:?}", i, e);
+            }
+        }
+        Ok::<_, Box<dyn std::error::Error>>(())
+    })?;
 
-                    match tun.send(&decrypted) {
-                        Ok(_) => println!("[server][rx] written to TUN"),
-                        Err(e) => eprintln!("[server][rx] tun.send: {}", e),
+    Ok(())
+}
+
+async fn run_worker(
+    tun: tun_rs::AsyncDevice,
+    listen: &str,
+    key1: Vec<u8>,
+    key2: Vec<u8>,
+    worker_id: usize,
+    client_addrs: Arc<Mutex<Vec<Option<SocketAddr>>>>,
+) {
+    // Każdy worker ma własny socket na tym samym porcie (SO_REUSEPORT)
+    let socket = bind_reuseport(listen).await.expect("bind UDP");
+
+    let mut tun_buf = vec![0u8; 65535];
+    let mut udp_buf = vec![0u8; 65535];
+
+    println!("[worker {}] started", worker_id);
+
+    loop {
+        tokio::select! {
+            // UDP -> deszyfruj -> TUN
+            result = socket.recv_from(&mut udp_buf) => {
+                match result {
+                    Ok((n, src)) => {
+                        {
+                            let mut addrs = client_addrs.lock().await;
+                            addrs[worker_id] = Some(src);
+                        }
+                        let decrypted = sdex::decrypt(&udp_buf[..n], &key1, &key2);
+                        if let Err(e) = tun.send(&decrypted).await {
+                            eprintln!("[worker {}] tun.send: {}", worker_id, e);
+                        }
+                    }
+                    Err(e) => {
+                        eprintln!("[worker {}] udp.recv_from: {}", worker_id, e);
+                        break;
                     }
                 }
-                Err(e) => eprintln!("[server][rx] recv_from: {}", e),
             }
-        }
-    });
-
-    // Main thread: TUN -> encrypt -> UDP
-    let tun = tun;
-    let mut buf = [0u8; 65535];
-    println!("[server][tx] main thread started, waiting for packets from TUN");
-    loop {
-        let n = tun.recv(&mut buf)?;
-        if n == 0 {
-            println!("[server][tx] TUN returned 0 bytes");
-            continue;
-        }
-        println!("[server][tx] {} bytes from TUN", n);
-
-        let encrypted = sdex::encrypt(&buf[..n], &key1, &key2);
-        println!("[server][tx] encrypted to {} bytes", encrypted.len());
-
-        let addr_opt = *client_addr.lock().unwrap();
-        match addr_opt {
-            Some(addr) => {
-                println!("[server][tx] sending {} bytes to {}", encrypted.len(), addr);
-                if let Err(e) = socket.send_to(&encrypted, addr) {
-                    eprintln!("[server][tx] send_to: {}", e);
+            // TUN -> szyfruj -> UDP
+            result = tun.recv(&mut tun_buf) => {
+                match result {
+                    Ok(n) if n > 0 => {
+                        let encrypted = sdex::encrypt(&tun_buf[..n], &key1, &key2);
+                        let addr = {
+                            let addrs = client_addrs.lock().await;
+                            addrs[worker_id]
+                        };
+                        if let Some(dst) = addr {
+                            if let Err(e) = socket.send_to(&encrypted, dst).await {
+                                eprintln!("[worker {}] udp.send_to: {}", worker_id, e);
+                            }
+                        }
+                    }
+                    Ok(_) => continue,
+                    Err(e) => {
+                        eprintln!("[worker {}] tun.recv: {}", worker_id, e);
+                        break;
+                    }
                 }
-            }
-            None => {
-                println!("[server][tx] no client_addr – don't know where to send");
             }
         }
     }
+}
+
+async fn bind_reuseport(addr: &str) -> std::io::Result<tokio::net::UdpSocket> {
+    use socket2::{Domain, Protocol, Socket, Type};
+
+    let addr: SocketAddr = addr
+        .to_socket_addrs()?
+        .next()
+        .ok_or_else(|| std::io::Error::new(std::io::ErrorKind::InvalidInput, "bad addr"))?;
+    let domain = if addr.is_ipv4() { Domain::IPV4 } else { Domain::IPV6 };
+    let socket = Socket::new(domain, Type::DGRAM, Some(Protocol::UDP))?;
+    socket.set_reuse_port(true)?;
+    socket.set_nonblocking(true)?;
+    socket.bind(&addr.into())?;
+    tokio::net::UdpSocket::from_std(socket.into())
 }

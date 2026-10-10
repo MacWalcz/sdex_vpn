@@ -5,9 +5,11 @@ edition = "2021"
 
 [dependencies]
 blake3 = "1.5"
-tun-rs = "2"
+tun-rs = { version = "2", features = ["async_tokio"] }
+tokio = { version = "1", features = ["rt", "rt-multi-thread", "net", "macros", "time", "sync"] }
 clap = { version = "4", features = ["derive"] }
 rtnetlink = "0.18"
-ipnetwork = "0.20"      # do parsowania CIDR
-tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
+ipnetwork = "0.20"
 futures-util = "0.3"
+socket2 = { version = "0.5", features = ["all"] }
+num_cpus = "1"

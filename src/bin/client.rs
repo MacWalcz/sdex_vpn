@@ -2,7 +2,7 @@ use clap::Parser;
 use sdex_vpn::vpn::client;
 
 #[derive(Parser)]
-#[command(name = "sdex-client", about = "Klient VPN SDEx")]
+#[command(name = "sdex-client", about = "Client VPN SDEx")]
 struct Args {
     /// Server address (IP:port)
     #[arg(short, long)]
@@ -27,6 +27,10 @@ struct Args {
     /// Second session key
     #[arg(long, default_value = "key2")]
     key2: String,
+
+    /// Number of threads
+    #[arg(long, default_value_t = num_cpus::get())]
+    threads: usize,
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -37,6 +41,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         &args.tun_ip,
         args.key1.as_bytes(),
         args.key2.as_bytes(),
-        args.route
+        args.route,
+        args.threads,
     )
 }
