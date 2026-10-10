@@ -22,7 +22,7 @@ pub fn run(
     let multi_queue = std::env::var("SDEX_NO_MULTI_QUEUE")
         .map(|v| !matches!(v.to_lowercase().as_str(), "1" | "true" | "yes"))
         .unwrap_or(true);
-
+    println!("[client] multi_queue = {}", multi_queue);
     let rt = tokio::runtime::Builder::new_multi_thread()
         .worker_threads(num_threads)
         .enable_all()
