@@ -133,8 +133,9 @@ async fn run_worker(
                     Ok(n) if n > 0 => {
                         println!("[worker {}] tun.recv: {} bytes", worker_id, n);
                         let encrypted = sdex::encrypt(&tun_buf[..n], &key1, &key2);
-                        if let Err(e) = socket.send(&encrypted).await {
-                            eprintln!("[worker {}] udp send: {}", worker_id, e);
+                        match socket.send(&encrypted).await {
+                        Ok(n) => println!("[worker {}] udp.send: {} bytes do {}", worker_id, n, server_addr),
+                        Err(e) => eprintln!("[worker {}] udp send ERR: {}", worker_id, e),
                         }
                     }
                     Ok(_) => continue,
