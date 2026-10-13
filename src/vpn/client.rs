@@ -25,7 +25,6 @@ pub fn run(
         .unwrap_or(true);
     println!("[client] multi_queue = {}", multi_queue);
 
-    // 1. TUN – potrzebuje kontekstu runtime, tworzymy tymczasowy
     let main_tun = {
         let rt = tokio::runtime::Builder::new_current_thread()
             .enable_all()

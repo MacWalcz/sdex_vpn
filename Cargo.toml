@@ -13,3 +13,4 @@ ipnetwork = "0.20"
 futures-util = "0.3"
 socket2 = { version = "0.5", features = ["all"] }
 num_cpus = "1"
+papaya = "0.2"

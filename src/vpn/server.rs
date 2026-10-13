@@ -1,8 +1,8 @@
-use std::net::{SocketAddr, ToSocketAddrs};
+use std::net::{Ipv4Addr, SocketAddr, ToSocketAddrs};
 use std::sync::Arc;
 use std::thread;
 
-use tokio::sync::Mutex;
+use papaya::HashMap;
 use tun_rs::DeviceBuilder;
 
 use crate::sdex;
@@ -38,8 +38,7 @@ pub fn run(
     };
     println!("[server] TUN created");
 
-    let client_addrs: Arc<Mutex<Vec<Option<SocketAddr>>>> =
-        Arc::new(Mutex::new(vec![None; num_threads]));
+    let client_map: Arc<HashMap<Ipv4Addr, SocketAddr>> = Arc::new(HashMap::new());
 
     let mut handles = Vec::with_capacity(num_threads);
 
@@ -48,7 +47,7 @@ pub fn run(
         let key1 = first_key.to_vec();
         let key2 = second_key.to_vec();
         let listen = listen.to_string();
-        let client_addrs = Arc::clone(&client_addrs);
+        let client_map = Arc::clone(&client_map);
 
         let handle = thread::spawn(move || {
             let rt = tokio::runtime::Builder::new_current_thread()
@@ -56,15 +55,13 @@ pub fn run(
                 .build()
                 .expect("runtime");
 
-            // 👇 try_clone POZA block_on, w kontekście runtime
             let tun = {
                 let _guard = rt.enter();
                 main_tun.try_clone().expect("try_clone")
             };
 
-            // 👇 block_on dostaje gotowy tun, nie pożycza rt do async move
             rt.block_on(async move {
-                run_worker(tun, &listen, key1, key2, worker_id, client_addrs).await;
+                run_worker(tun, &listen, key1, key2, worker_id, client_map).await;
             });
         });
         handles.push(handle);
@@ -87,9 +84,9 @@ async fn run_worker(
     key1: Vec<u8>,
     key2: Vec<u8>,
     worker_id: usize,
-    client_addrs: Arc<Mutex<Vec<Option<SocketAddr>>>>,
+    client_map: Arc<HashMap<Ipv4Addr, SocketAddr>>,
 ) {
-    let socket = bind_reuseport(listen).await.expect("bind UDP");
+    let socket = bind_reuseport(listen).expect("bind UDP");
 
     let mut tun_buf = vec![0u8; 65535];
     let mut udp_buf = vec![0u8; 65535];
@@ -98,41 +95,84 @@ async fn run_worker(
 
     loop {
         tokio::select! {
+            // UDP -> deszyfruj -> TUN (ruch od klienta)
             result = socket.recv_from(&mut udp_buf) => {
                 match result {
                     Ok((n, src)) => {
-                        {
-                            let mut addrs = client_addrs.lock().await;
-                            addrs[worker_id] = Some(src);
-                        }
+                        println!("[worker {}] udp.recv_from: {} bytes od {}", worker_id, n, src);
+
                         let decrypted = sdex::decrypt(&udp_buf[..n], &key1, &key2);
-                        if let Err(e) = tun.send(&decrypted).await {
-                            eprintln!("[worker {}] tun.send: {}", worker_id, e);
+
+                        // Parsuj źródłowy IP z nagłówka IP (bajty 12-15)
+                        if decrypted.len() >= 20 {
+                            let src_ip = Ipv4Addr::new(
+                                decrypted[12], decrypted[13], decrypted[14], decrypted[15],
+                            );
+
+                            // 👇 Zapisz mapping. Scoped block = guard dropped przed await.
+                            let is_new = {
+                                let map = client_map.pin();
+                                map.insert(src_ip, src).is_none()
+                            };
+
+                            if is_new {
+                                println!("[worker {}] NOWY KLIENT: {} <-> {}", worker_id, src_ip, src);
+                            }
+                        }
+
+                        match tun.send(&decrypted).await {
+                            Ok(_) => println!("[worker {}] tun.send: {} bytes OK", worker_id, decrypted.len()),
+                            Err(e) => eprintln!("[worker {}] tun.send ERR: {}", worker_id, e),
                         }
                     }
                     Err(e) => {
-                        eprintln!("[worker {}] udp.recv_from: {}", worker_id, e);
+                        eprintln!("[worker {}] udp.recv_from ERR: {}", worker_id, e);
                         break;
                     }
                 }
             }
+            // TUN -> szyfruj -> UDP (ruch do klienta)
             result = tun.recv(&mut tun_buf) => {
                 match result {
                     Ok(n) if n > 0 => {
-                        let encrypted = sdex::encrypt(&tun_buf[..n], &key1, &key2);
-                        let addr = {
-                            let addrs = client_addrs.lock().await;
-                            addrs[worker_id]
+                        if n < 20 {
+                            continue;
+                        }
+
+                        // Parsuj docelowy IP z nagłówka IP (bajty 16-19)
+                        let dst_ip = Ipv4Addr::new(
+                            tun_buf[16], tun_buf[17], tun_buf[18], tun_buf[19],
+                        );
+
+                        // 👇 Lookup w mapie. `copied()` = SocketAddr jest Copy, guard znika.
+                        let dst = {
+                            let map = client_map.pin();
+                            map.get(&dst_ip).copied()
                         };
-                        if let Some(dst) = addr {
-                            if let Err(e) = socket.send_to(&encrypted, dst).await {
-                                eprintln!("[worker {}] udp.send_to: {}", worker_id, e);
+
+                        let encrypted = sdex::encrypt(&tun_buf[..n], &key1, &key2);
+
+                        match dst {
+                            Some(addr) => {
+                                match socket.send_to(&encrypted, addr).await {
+                                    Ok(sent) => println!(
+                                        "[worker {}] tun.recv {} bytes (dst {}) -> udp.send_to {} do {}",
+                                        worker_id, n, dst_ip, sent, addr
+                                    ),
+                                    Err(e) => eprintln!("[worker {}] udp.send_to ERR: {}", worker_id, e),
+                                }
+                            }
+                            None => {
+                                println!(
+                                    "[worker {}] tun.recv {} bytes, dst {} – brak w mapie, drop",
+                                    worker_id, n, dst_ip
+                                );
                             }
                         }
                     }
                     Ok(_) => continue,
                     Err(e) => {
-                        eprintln!("[worker {}] tun.recv: {}", worker_id, e);
+                        eprintln!("[worker {}] tun.recv ERR: {}", worker_id, e);
                         break;
                     }
                 }
@@ -141,14 +181,18 @@ async fn run_worker(
     }
 }
 
-async fn bind_reuseport(addr: &str) -> std::io::Result<tokio::net::UdpSocket> {
+fn bind_reuseport(addr: &str) -> std::io::Result<tokio::net::UdpSocket> {
     use socket2::{Domain, Protocol, Socket, Type};
 
     let addr: SocketAddr = addr
         .to_socket_addrs()?
         .next()
         .ok_or_else(|| std::io::Error::new(std::io::ErrorKind::InvalidInput, "bad addr"))?;
-    let domain = if addr.is_ipv4() { Domain::IPV4 } else { Domain::IPV6 };
+    let domain = if addr.is_ipv4() {
+        Domain::IPV4
+    } else {
+        Domain::IPV6
+    };
     let socket = Socket::new(domain, Type::DGRAM, Some(Protocol::UDP))?;
     socket.set_reuse_port(true)?;
     socket.set_nonblocking(true)?;
