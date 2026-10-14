@@ -95,7 +95,6 @@ async fn run_worker(
 
     loop {
         tokio::select! {
-            // UDP -> deszyfruj -> TUN (ruch od klienta)
             result = socket.recv_from(&mut udp_buf) => {
                 match result {
                     Ok((n, src)) => {
@@ -103,13 +102,11 @@ async fn run_worker(
 
                         let decrypted = sdex::decrypt(&udp_buf[..n], &key1, &key2);
 
-                        // Parsuj źródłowy IP z nagłówka IP (bajty 12-15)
                         if decrypted.len() >= 20 {
                             let src_ip = Ipv4Addr::new(
                                 decrypted[12], decrypted[13], decrypted[14], decrypted[15],
                             );
 
-                            // 👇 Zapisz mapping. Scoped block = guard dropped przed await.
                             let is_new = {
                                 let map = client_map.pin();
                                 map.insert(src_ip, src).is_none()
@@ -131,7 +128,6 @@ async fn run_worker(
                     }
                 }
             }
-            // TUN -> szyfruj -> UDP (ruch do klienta)
             result = tun.recv(&mut tun_buf) => {
                 match result {
                     Ok(n) if n > 0 => {
@@ -139,12 +135,10 @@ async fn run_worker(
                             continue;
                         }
 
-                        // Parsuj docelowy IP z nagłówka IP (bajty 16-19)
                         let dst_ip = Ipv4Addr::new(
                             tun_buf[16], tun_buf[17], tun_buf[18], tun_buf[19],
                         );
 
-                        // 👇 Lookup w mapie. `copied()` = SocketAddr jest Copy, guard znika.
                         let dst = {
                             let map = client_map.pin();
                             map.get(&dst_ip).copied()

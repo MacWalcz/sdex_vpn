@@ -40,7 +40,6 @@ pub fn run(
     };
     println!("[client] TUN created");
 
-    // 2. Routing – własny tymczasowy runtime
     let full_tunnel = routes.is_empty();
     let server_ip: std::net::Ipv4Addr = server.split(':').next().unwrap().parse()?;
     println!("[client] setting up routes (full_tunnel = {})", full_tunnel);
@@ -63,13 +62,11 @@ pub fn run(
     }
     println!("[client] routes set up");
 
-    // 3. Adres serwera
     let server_addr: SocketAddr = server
         .to_socket_addrs()?
         .next()
         .ok_or("cannot resolve server")?;
 
-    // 4. N wątków OS, każdy z własnym current_thread runtime i własną kolejką
     let mut handles = Vec::with_capacity(num_threads);
 
     for worker_id in 0..num_threads {
@@ -83,13 +80,11 @@ pub fn run(
                 .build()
                 .expect("runtime");
 
-            // 👇 try_clone POZA block_on, ale w kontekście runtime
             let tun = {
                 let _guard = rt.enter();
                 main_tun.try_clone().expect("try_clone")
             };
 
-            // 👇 block_on dostaje gotowy tun; async move przenosi tylko tun + resztę
             rt.block_on(async move {
                 run_worker(tun, server_addr, key1, key2, worker_id).await;
             });
@@ -128,6 +123,7 @@ async fn run_worker(
     loop {
         tokio::select! {
             result = tun.recv(&mut tun_buf) => {
+                println!("[worker {}] tun.recv RECEIVED: {:?}", worker_id, result.as_ref().map(|&n| n));
                 match result {
                     Ok(n) if n > 0 => {
                         println!("[worker {}] tun.recv: {} bytes", worker_id, n);
