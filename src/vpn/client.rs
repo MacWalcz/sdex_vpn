@@ -1,5 +1,4 @@
 use std::net::{SocketAddr, ToSocketAddrs};
-use std::sync::Arc;
 use std::thread;
 
 use tun_rs::DeviceBuilder;

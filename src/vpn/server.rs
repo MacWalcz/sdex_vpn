@@ -36,8 +36,7 @@ pub fn run(
     let (_, oif) = rt_setup.block_on(get_default_gateway())?;
     let out_iface = iface_name_by_index(oif).unwrap_or_else(|| "eth0".to_string());
 
-    rt_setup.block_on(setup_forwarding(tun_name, &subnet, &out_iface))?;
-
+    setup_forwarding(&subnet, &out_iface)?;
 
     let main_rt = tokio::runtime::Builder::new_current_thread()
         .enable_all()
@@ -223,34 +222,63 @@ fn bind_reuseport(addr: &str) -> std::io::Result<tokio::net::UdpSocket> {
     tokio::net::UdpSocket::from_std(socket.into())
 }
 
-async fn setup_forwarding(
-    tun_name: &str,
+fn setup_forwarding(
     subnet: &str,
     out_iface: &str,
 ) -> Result<(), Box<dyn std::error::Error>> {
     std::fs::write("/proc/sys/net/ipv4/ip_forward", "1")?;
     println!("[server] ip_forward = 1");
 
-    let _ = std::fs::write(format!("/proc/sys/net/ipv4/conf/{}/rp_filter", tun_name), "0");
-    let _ = std::fs::write(format!("/proc/sys/net/ipv4/conf/{}/accept_local", tun_name), "1");
-    println!("[server] rp_filter = 0, accept_local = 1 dla {}", tun_name);
+    let table_exists = std::process::Command::new("nft")
+        .args(["list", "table", "ip", "nat"])
+        .output()
+        .map(|o| o.status.success())
+        .unwrap_or(false);
 
-    let check = std::process::Command::new("iptables")
-        .args(["-t", "nat", "-C", "POSTROUTING", "-s", subnet, "-o", out_iface, "-j", "MASQUERADE"])
-        .status();
-
-    if matches!(check, Ok(s) if s.success()) {
-        println!("[server] NAT już istnieje");
-    } else {
-        let status = std::process::Command::new("iptables")
-            .args(["-t", "nat", "-A", "POSTROUTING", "-s", subnet, "-o", out_iface, "-j", "MASQUERADE"])
+    if !table_exists {
+        let s = std::process::Command::new("nft")
+            .args(["add", "table", "ip", "nat"])
             .status()?;
-        if !status.success() {
-            return Err("iptables MASQUERADE failed".into());
+        if !s.success() {
+            return Err("nft add table failed".into());
         }
-        println!("[server] dodano NAT: {} → {}", subnet, out_iface);
+        println!("[server] utworzono tabelę nft 'ip nat'");
+
+        let s = std::process::Command::new("nft")
+            .args([
+                "add", "chain", "ip", "nat", "postrouting",
+                "{", "type", "nat", "hook", "postrouting", "priority", "100", ";", "}",
+            ])
+            .status()?;
+        if !s.success() {
+            return Err("nft add chain failed".into());
+        }
+        println!("[server] utworzono łańcuch nft 'postrouting'");
     }
 
+    let ruleset = std::process::Command::new("nft")
+        .args(["list", "chain", "ip", "nat", "postrouting"])
+        .output()?;
+    let ruleset_str = String::from_utf8_lossy(&ruleset.stdout);
+
+    if ruleset_str.contains(subnet) && ruleset_str.contains("masquerade") {
+        println!("[server] NAT już istnieje");
+        return Ok(());
+    }
+
+    let s = std::process::Command::new("nft")
+        .args([
+            "add", "rule", "ip", "nat", "postrouting",
+            "ip", "saddr", subnet,
+            "oifname", out_iface,
+            "masquerade",
+        ])
+        .status()?;
+    if !s.success() {
+        return Err("nft add rule MASQUERADE failed".into());
+    }
+
+    println!("[server] dodano NAT: {} → {}", subnet, out_iface);
     Ok(())
 }
 
