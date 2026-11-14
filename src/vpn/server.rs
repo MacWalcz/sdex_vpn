@@ -222,10 +222,7 @@ fn bind_reuseport(addr: &str) -> std::io::Result<tokio::net::UdpSocket> {
     tokio::net::UdpSocket::from_std(socket.into())
 }
 
-fn setup_forwarding(
-    subnet: &str,
-    out_iface: &str,
-) -> Result<(), Box<dyn std::error::Error>> {
+fn setup_forwarding(subnet: &str, out_iface: &str) -> Result<(), Box<dyn std::error::Error>> {
     std::fs::write("/proc/sys/net/ipv4/ip_forward", "1")?;
     println!("[server] ip_forward = 1");
 
@@ -246,8 +243,20 @@ fn setup_forwarding(
 
         let s = std::process::Command::new("nft")
             .args([
-                "add", "chain", "ip", "nat", "postrouting",
-                "{", "type", "nat", "hook", "postrouting", "priority", "100", ";", "}",
+                "add",
+                "chain",
+                "ip",
+                "nat",
+                "postrouting",
+                "{",
+                "type",
+                "nat",
+                "hook",
+                "postrouting",
+                "priority",
+                "100",
+                ";",
+                "}",
             ])
             .status()?;
         if !s.success() {
@@ -268,9 +277,16 @@ fn setup_forwarding(
 
     let s = std::process::Command::new("nft")
         .args([
-            "add", "rule", "ip", "nat", "postrouting",
-            "ip", "saddr", subnet,
-            "oifname", out_iface,
+            "add",
+            "rule",
+            "ip",
+            "nat",
+            "postrouting",
+            "ip",
+            "saddr",
+            subnet,
+            "oifname",
+            out_iface,
             "masquerade",
         ])
         .status()?;

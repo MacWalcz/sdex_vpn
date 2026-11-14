@@ -57,8 +57,8 @@ pub async fn add_default_route(iface: &str) -> Result<(), Box<dyn std::error::Er
         .output_interface(idx)
         .build();
 
-    handle.route().add(route).execute().await?;
-    println!("[routes] added default route {}", iface);
+    handle.route().add(route).replace().execute().await?;
+    println!("[routes] replaced default route with {}", iface);
     Ok(())
 }
 
