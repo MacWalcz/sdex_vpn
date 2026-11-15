@@ -16,6 +16,7 @@ pub async fn get_iface_index(handle: &Handle, name: &str) -> Result<u32, rtnetli
     }
 }
 
+
 pub async fn get_default_gateway() -> Result<(Ipv4Addr, u32), Box<dyn std::error::Error>> {
     let (connection, handle, _) = new_connection()?;
     tokio::spawn(connection);
@@ -47,6 +48,40 @@ pub async fn get_default_gateway() -> Result<(Ipv4Addr, u32), Box<dyn std::error
     Err("Couldnt find default route".into())
 }
 
+
+pub async fn get_route_to_ip(dest: Ipv4Addr) -> Result<(Ipv4Addr, u32), Box<dyn std::error::Error>> {
+    let (connection, handle, _) = new_connection()?;
+    tokio::spawn(connection);
+
+    let route_msg = RouteMessageBuilder::<Ipv4Addr>::new()
+        .destination_prefix(dest, 32)
+        .build();
+
+    let mut routes = handle.route().get(route_msg).execute();
+
+    if let Some(route) = routes.try_next().await? {
+        let mut gateway = Ipv4Addr::UNSPECIFIED; // 0.0.0.0 (brak bramy)
+        let mut oif = None;
+
+        for attr in &route.attributes {
+            match attr {
+                RouteAttribute::Gateway(gw) => {
+                    if let RouteAddress::Inet(ip) = gw {
+                        gateway = *ip;
+                    }
+                }
+                RouteAttribute::Oif(idx) => oif = Some(*idx),
+                _ => {}
+            }
+        }
+
+        if let Some(idx) = oif {
+            return Ok((gateway, idx));
+        }
+    }
+    Err(format!("Could not find a route to {}", dest).into())
+}
+
 pub async fn add_default_route(iface: &str) -> Result<(), Box<dyn std::error::Error>> {
     let (connection, handle, _) = new_connection()?;
     tokio::spawn(connection);
@@ -57,6 +92,7 @@ pub async fn add_default_route(iface: &str) -> Result<(), Box<dyn std::error::Er
         .output_interface(idx)
         .build();
 
+    // Używamy .replace(), aby nadpisać istniejącą trasę domyślną bez błędu EEXIST (-17)
     handle.route().add(route).replace().execute().await?;
     println!("[routes] replaced default route with {}", iface);
     Ok(())
@@ -70,14 +106,23 @@ pub async fn add_host_route(
     let (connection, handle, _) = new_connection()?;
     tokio::spawn(connection);
 
-    let route = RouteMessageBuilder::<Ipv4Addr>::new()
+    let mut builder = RouteMessageBuilder::<Ipv4Addr>::new()
         .destination_prefix(dest, 32)
-        .gateway(gateway)
-        .output_interface(oif)
-        .build();
+        .output_interface(oif);
 
-    handle.route().add(route).execute().await?;
-    println!("[routes] Host route {} -> {} (iface {})", dest, gateway, oif);
+    if gateway != Ipv4Addr::UNSPECIFIED {
+        builder = builder.gateway(gateway);
+    }
+
+    let route = builder.build();
+
+    match handle.route().add(route).execute().await {
+        Ok(()) => println!("[routes] Host route {} via {} (iface {})", dest, gateway, oif),
+        Err(rtnetlink::Error::NetlinkError(msg)) if msg.raw_code() == (-17) => {
+            println!("[routes] Host route {} already exists. Skipping.", dest);
+        }
+        Err(e) => return Err(e.into()),
+    }
     Ok(())
 }
 
@@ -92,8 +137,12 @@ pub async fn add_route(iface: &str, cidr: &str) -> Result<(), Box<dyn std::error
         .output_interface(idx)
         .build();
 
-    handle.route().add(route).execute().await?;
-    println!("[routes] Added route {} trough {}", cidr, iface);
+    match handle.route().add(route).execute().await {
+        Ok(()) => println!("[routes] Added route {} through {}", cidr, iface),
+        Err(rtnetlink::Error::NetlinkError(msg)) if msg.raw_code() == (-17) => {
+            println!("[routes] Route {} already exists. Skipping.", cidr);
+        }
+        Err(e) => return Err(e.into()),
+    }
     Ok(())
 }
-

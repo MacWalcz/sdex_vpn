@@ -3,7 +3,7 @@ use std::thread;
 
 use tun_rs::DeviceBuilder;
 
-use super::routes::{add_default_route, add_host_route, add_route, get_default_gateway};
+use super::routes::{add_default_route, add_host_route, add_route, get_route_to_ip};
 use crate::sdex;
 
 pub fn run(
@@ -42,7 +42,7 @@ pub fn run(
     println!("[client] setting up routes (full_tunnel = {})", full_tunnel);
 
     main_rt.block_on(async {
-        let (gw, oif) = get_default_gateway().await?;
+        let (gw, oif) = get_route_to_ip(server_ip).await?;
         add_host_route(server_ip, gw, oif).await?;
         if full_tunnel {
             add_default_route(tun_name).await?;
