@@ -293,6 +293,51 @@ mod tests {
         assert_eq!(decrypt_into(&src, &mut dst, b"key1", b"key2"), 0);
     }
 
+    /// Golden vectors from doc/sdex-algorithm.md (Appendix B). If this test
+    /// fails, the wire format changed: either revert the change or update the
+    /// specification in the same commit, and bump the format version.
+    #[test]
+    fn golden_vectors_are_stable() {
+        let hex = |b: &[u8]| b.iter().map(|x| format!("{:02x}", x)).collect::<String>();
+        let pt = |n: usize| -> Vec<u8> { (0..n).map(|i| (i % 251) as u8).collect() };
+        let (k1, k2): (&[u8], &[u8]) = (b"key1", b"key2");
+
+        assert_eq!(BLOCK_SIZE, 1024, "block size is part of the wire format");
+
+        assert_eq!(hex(&encrypt(&[], k1, k2)), "");
+        assert_eq!(hex(&encrypt(&pt(1), k1, k2)), "73");
+        assert_eq!(hex(&encrypt(&pt(10), k1, k2)), "73f733e79be3590da99e");
+        assert_eq!(
+            hex(&encrypt(&pt(32), k1, k2)),
+            "73f733e79be3590da99e5bb30c46630eaade74db2d69b0e2f0056e5e83c6e33f"
+        );
+        assert_eq!(
+            hex(&encrypt(&pt(64), k1, k2)),
+            "73f733e79be3590da99e5bb30c46630eaade74db2d69b0e2f0056e5e83c6e33f\
+             53d713c7bbc3792d89be7b932c66432e8afe54fb0d4990c2d0254e7ea3e6c31f"
+        );
+
+        // longer inputs: compare the digest of the ciphertext
+        for (len, want) in [
+            (1024usize, "e824be98fef50ea70371dfcffd473fd49e7eb7ffdf8be1c05a024e09a25ca7f4"),
+            (1025, "ba0518a2e322d2e3e15cbbbc07babb01defb70701316663e58164fbf164e84a5"),
+            (1400, "0e3c2449ca9b937720bdaee4a8e0cc663ba74a6fa134da13a1274a1bf938bab3"),
+            (2048, "0df56659a6e306666c9eb5c58d24d295a19b73612ba7c5106908f45a63c4d48f"),
+            (2049, "030b9ddff38cfcd7a06a3952ec569cf0ccff530412a1afc8c0937a96b9ab7aeb"),
+        ] {
+            let ct = encrypt(&pt(len), k1, k2);
+            assert_eq!(ct.len(), len);
+            assert_eq!(blake3::hash(&ct).to_hex().as_str(), want, "len {}", len);
+            assert_eq!(decrypt(&ct, k1, k2), pt(len), "round trip, len {}", len);
+        }
+
+        // the password must actually enter the ciphertext
+        assert_eq!(
+            hex(&encrypt(&pt(64), k1, b"other"))[..32],
+            "e24e8309292cee11d1d28d7a03dc482e"[..32]
+        );
+    }
+
     #[test]
     #[ignore = "timing helper; run with --ignored --nocapture"]
     fn timing_1400_bytes() {
