@@ -4,9 +4,13 @@ use std::thread;
 
 use ipnetwork::Ipv4Network;
 use papaya::HashMap;
+use tokio::sync::mpsc;
 use tun_rs::DeviceBuilder;
 
 use super::routes::get_default_gateway;
+use super::{
+    ipv4_flow_key, raise_socket_buffer_limits, tun_task, FlowKey, SOCKET_BUFFER_BYTES,
+};
 use crate::sdex;
 
 pub fn run(
@@ -17,6 +21,8 @@ pub fn run(
     second_key: &[u8],
     num_threads: usize,
 ) -> Result<(), Box<dyn std::error::Error>> {
+    let num_threads = num_threads.max(1);
+
     println!("[server] listening on {}", listen);
     println!("[server] threads = {}", num_threads);
 
@@ -51,47 +57,43 @@ pub fn run(
     };
     println!("[server] TUN created");
 
-    let client_map: Arc<HashMap<Ipv4Addr, SocketAddr>> = Arc::new(HashMap::new());
+    raise_socket_buffer_limits();
 
-    // try_clone creates a distinct TUN queue per call (Linux: opens /dev/net/tun
-    // and attaches with IFF_MULTI_QUEUE), so every worker owns its own queue.
-    let mut extra_tuns = Vec::with_capacity(num_threads.saturating_sub(1));
-    for _ in 1..num_threads {
+    let client_map: Arc<HashMap<FlowKey, SocketAddr>> = Arc::new(HashMap::new());
+
+    let mut worker_txs = Vec::with_capacity(num_threads);
+    let mut worker_rxs = Vec::with_capacity(num_threads);
+    for _ in 0..num_threads {
+        let (tx, rx) = mpsc::channel(4096);
+        worker_txs.push(tx);
+        worker_rxs.push(rx);
+    }
+    let (to_tun_tx, to_tun_rx) = mpsc::channel(4096);
+
+    let mut handles = Vec::with_capacity(num_threads + 1);
+
+    for (worker_id, rx) in worker_rxs.into_iter().enumerate() {
         let rt = tokio::runtime::Builder::new_current_thread()
             .enable_all()
             .build()?;
-        let tun = {
-            let _guard = rt.enter();
-            main_tun.try_clone().expect("try_clone")
-        };
-        extra_tuns.push((tun, rt));
-    }
-
-    let mut handles = Vec::with_capacity(num_threads);
-
-    {
         let key1 = first_key.to_vec();
         let key2 = second_key.to_vec();
         let listen = listen.to_string();
         let client_map = Arc::clone(&client_map);
-        let tun = main_tun;
-        let rt = main_rt;
+        let to_tun = to_tun_tx.clone();
         handles.push(thread::spawn(move || {
             rt.block_on(async move {
-                run_worker(tun, &listen, key1, key2, 0, client_map).await;
+                run_worker(worker_id, rx, to_tun, &listen, key1, key2, client_map).await;
             });
         }));
     }
+    drop(to_tun_tx);
 
-    for (idx, (tun, rt)) in extra_tuns.into_iter().enumerate() {
-        let worker_id = idx + 1;
-        let key1 = first_key.to_vec();
-        let key2 = second_key.to_vec();
-        let listen = listen.to_string();
-        let client_map = Arc::clone(&client_map);
+    {
+        let rt = main_rt;
         handles.push(thread::spawn(move || {
             rt.block_on(async move {
-                run_worker(tun, &listen, key1, key2, worker_id, client_map).await;
+                tun_task(main_tun, worker_txs, to_tun_rx).await;
             });
         }));
     }
@@ -108,16 +110,16 @@ pub fn run(
 }
 
 async fn run_worker(
-    tun: tun_rs::AsyncDevice,
+    worker_id: usize,
+    mut rx: mpsc::Receiver<Vec<u8>>,
+    to_tun: mpsc::Sender<Vec<u8>>,
     listen: &str,
     key1: Vec<u8>,
     key2: Vec<u8>,
-    worker_id: usize,
-    client_map: Arc<HashMap<Ipv4Addr, SocketAddr>>,
+    client_map: Arc<HashMap<FlowKey, SocketAddr>>,
 ) {
     let socket = bind_reuseport(listen).expect("bind UDP");
 
-    let mut tun_buf = vec![0u8; 65535];
     let mut udp_buf = vec![0u8; 65535];
     let mut enc_buf = vec![0u8; 65535];
     let mut dec_buf = vec![0u8; 65535];
@@ -126,41 +128,36 @@ async fn run_worker(
 
     loop {
         tokio::select! {
+            packet = rx.recv() => {
+                match packet {
+                    Some(packet) => {
+                        tun_to_udp(&packet, &socket, &mut enc_buf, &key1, &key2, &client_map).await
+                    }
+                    None => return,
+                }
+            }
             result = socket.recv_from(&mut udp_buf) => {
                 match result {
                     Ok((n, src)) => {
-                        udp_to_tun(&udp_buf[..n], src, &tun, &mut dec_buf, &key1, &key2, &client_map).await
+                        udp_to_tun(&udp_buf[..n], src, &to_tun, &mut dec_buf, &key1, &key2, &client_map).await
                     }
-                    Err(_) => break,
-                }
-            }
-            result = tun.recv(&mut tun_buf) => {
-                match result {
-                    Ok(n) if n > 0 => {
-                        tun_to_udp(&tun_buf[..n], &socket, &mut enc_buf, &key1, &key2, &client_map).await
-                    }
-                    Ok(_) => {}
-                    Err(_) => break,
+                    Err(_) => return,
                 }
             }
         }
 
-        // One wakeup handles the whole burst queued behind it.
-        loop {
-            match tun.try_recv(&mut tun_buf) {
-                Ok(n) if n > 0 => {
-                    tun_to_udp(&tun_buf[..n], &socket, &mut enc_buf, &key1, &key2, &client_map).await
-                }
-                Ok(_) => {}
-                Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => break,
-                Err(_) => return,
+        // One wakeup handles a burst; cap it so both directions still run.
+        for _ in 0..super::DRAIN_BATCH {
+            match rx.try_recv() {
+                Ok(packet) => tun_to_udp(&packet, &socket, &mut enc_buf, &key1, &key2, &client_map).await,
+                Err(_) => break,
             }
         }
 
-        loop {
+        for _ in 0..super::DRAIN_BATCH {
             match socket.try_recv_from(&mut udp_buf) {
                 Ok((n, src)) => {
-                    udp_to_tun(&udp_buf[..n], src, &tun, &mut dec_buf, &key1, &key2, &client_map).await
+                    udp_to_tun(&udp_buf[..n], src, &to_tun, &mut dec_buf, &key1, &key2, &client_map).await
                 }
                 Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => break,
                 Err(_) => return,
@@ -172,11 +169,11 @@ async fn run_worker(
 async fn udp_to_tun(
     packet: &[u8],
     src: SocketAddr,
-    tun: &tun_rs::AsyncDevice,
+    to_tun: &mpsc::Sender<Vec<u8>>,
     dec_buf: &mut [u8],
     key1: &[u8],
     key2: &[u8],
-    client_map: &HashMap<Ipv4Addr, SocketAddr>,
+    client_map: &HashMap<FlowKey, SocketAddr>,
 ) {
     let written = sdex::decrypt_into(packet, dec_buf, key1, key2);
     if written == 0 {
@@ -184,19 +181,12 @@ async fn udp_to_tun(
     }
     let plaintext = &dec_buf[..written];
 
-    if written >= 20 {
-        let src_ip = Ipv4Addr::new(plaintext[12], plaintext[13], plaintext[14], plaintext[15]);
+    if let Some(flow) = ipv4_flow_key(plaintext) {
         let map = client_map.pin();
-        map.insert(src_ip, src);
+        map.insert(flow, src);
     }
 
-    match tun.try_send(plaintext) {
-        Ok(_) => {}
-        Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => {
-            let _ = tun.send(plaintext).await;
-        }
-        Err(_) => {}
-    }
+    let _ = to_tun.send(plaintext.to_vec()).await;
 }
 
 async fn tun_to_udp(
@@ -205,16 +195,14 @@ async fn tun_to_udp(
     enc_buf: &mut [u8],
     key1: &[u8],
     key2: &[u8],
-    client_map: &HashMap<Ipv4Addr, SocketAddr>,
+    client_map: &HashMap<FlowKey, SocketAddr>,
 ) {
-    if packet.len() < 20 {
+    let Some(flow) = ipv4_flow_key(packet) else {
         return;
-    }
-
-    let dst_ip = Ipv4Addr::new(packet[16], packet[17], packet[18], packet[19]);
+    };
     let dst = {
         let map = client_map.pin();
-        map.get(&dst_ip).copied()
+        map.get(&flow).copied()
     };
     let Some(addr) = dst else {
         return;
@@ -249,6 +237,8 @@ fn bind_reuseport(addr: &str) -> std::io::Result<tokio::net::UdpSocket> {
     };
     let socket = Socket::new(domain, Type::DGRAM, Some(Protocol::UDP))?;
     socket.set_reuse_port(true)?;
+    socket.set_recv_buffer_size(SOCKET_BUFFER_BYTES)?;
+    socket.set_send_buffer_size(SOCKET_BUFFER_BYTES)?;
     socket.set_nonblocking(true)?;
     socket.bind(&addr.into())?;
     tokio::net::UdpSocket::from_std(socket.into())

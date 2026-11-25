@@ -1,6 +1,7 @@
 use std::net::{SocketAddr, ToSocketAddrs};
 use std::thread;
 
+use tokio::sync::mpsc;
 use tun_rs::DeviceBuilder;
 
 use super::routes::{add_default_route, add_host_route, add_route, get_route_to_ip};
@@ -15,6 +16,8 @@ pub fn run(
     routes: Vec<String>,
     num_threads: usize,
 ) -> Result<(), Box<dyn std::error::Error>> {
+    let num_threads = num_threads.max(1);
+
     println!("[client] connecting to {}", server);
     println!("[client] TUN {} with IP {}", tun_name, tun_ip);
     println!("[client] threads = {}", num_threads);
@@ -59,46 +62,41 @@ pub fn run(
         .next()
         .ok_or("cannot resolve server")?;
 
-    // try_clone creates a distinct TUN queue per call (Linux: opens /dev/net/tun
-    // and attaches with IFF_MULTI_QUEUE), so every worker owns its own queue.
-    let mut extra_tuns: Vec<(tun_rs::AsyncDevice, tokio::runtime::Runtime)> =
-        Vec::with_capacity(num_threads.saturating_sub(1));
-    for _ in 1..num_threads {
+    super::raise_socket_buffer_limits();
+
+    let mut worker_txs = Vec::with_capacity(num_threads);
+    let mut worker_rxs = Vec::with_capacity(num_threads);
+    for _ in 0..num_threads {
+        let (tx, rx) = mpsc::channel(4096);
+        worker_txs.push(tx);
+        worker_rxs.push(rx);
+    }
+    let (to_tun_tx, to_tun_rx) = mpsc::channel(4096);
+
+    let mut handles = Vec::with_capacity(num_threads + 1);
+
+    for (worker_id, rx) in worker_rxs.into_iter().enumerate() {
         let rt = tokio::runtime::Builder::new_current_thread()
             .enable_all()
             .build()?;
-        let tun = {
-            let _guard = rt.enter();
-            main_tun.try_clone().expect("try_clone")
-        };
-        extra_tuns.push((tun, rt));
+        let key1 = first_key.to_vec();
+        let key2 = second_key.to_vec();
+        let to_tun = to_tun_tx.clone();
+        handles.push(thread::spawn(move || {
+            rt.block_on(async move {
+                run_worker(worker_id, rx, to_tun, server_addr, key1, key2).await;
+            });
+        }));
     }
-
-    let mut handles = Vec::with_capacity(num_threads);
+    drop(to_tun_tx);
 
     {
-        let key1 = first_key.to_vec();
-        let key2 = second_key.to_vec();
-        let tun = main_tun;
         let rt = main_rt;
-        let handle = thread::spawn(move || {
+        handles.push(thread::spawn(move || {
             rt.block_on(async move {
-                run_worker(tun, server_addr, key1, key2, 0).await;
+                super::tun_task(main_tun, worker_txs, to_tun_rx).await;
             });
-        });
-        handles.push(handle);
-    }
-
-    for (idx, (tun, rt)) in extra_tuns.into_iter().enumerate() {
-        let worker_id = idx + 1;
-        let key1 = first_key.to_vec();
-        let key2 = second_key.to_vec();
-        let handle = thread::spawn(move || {
-            rt.block_on(async move {
-                run_worker(tun, server_addr, key1, key2, worker_id).await;
-            });
-        });
-        handles.push(handle);
+        }));
     }
 
     println!("[client] {} workers started", num_threads);
@@ -113,18 +111,23 @@ pub fn run(
 }
 
 async fn run_worker(
-    tun: tun_rs::AsyncDevice,
+    worker_id: usize,
+    mut rx: mpsc::Receiver<Vec<u8>>,
+    to_tun: mpsc::Sender<Vec<u8>>,
     server_addr: SocketAddr,
     key1: Vec<u8>,
     key2: Vec<u8>,
-    worker_id: usize,
 ) {
     let socket = tokio::net::UdpSocket::bind("0.0.0.0:0")
         .await
         .expect("bind UDP");
+    {
+        let socket = socket2::SockRef::from(&socket);
+        let _ = socket.set_recv_buffer_size(super::SOCKET_BUFFER_BYTES);
+        let _ = socket.set_send_buffer_size(super::SOCKET_BUFFER_BYTES);
+    }
     socket.connect(server_addr).await.expect("connect UDP");
 
-    let mut tun_buf = vec![0u8; 65535];
     let mut udp_buf = vec![0u8; 65535];
     let mut enc_buf = vec![0u8; 65535];
     let mut dec_buf = vec![0u8; 65535];
@@ -133,36 +136,31 @@ async fn run_worker(
 
     loop {
         tokio::select! {
-            result = tun.recv(&mut tun_buf) => {
-                match result {
-                    Ok(n) if n > 0 => tun_to_udp(&tun_buf[..n], &socket, &mut enc_buf, &key1, &key2).await,
-                    Ok(_) => {}
-                    Err(_) => break,
+            packet = rx.recv() => {
+                match packet {
+                    Some(packet) => tun_to_udp(&packet, &socket, &mut enc_buf, &key1, &key2).await,
+                    None => return,
                 }
             }
             result = socket.recv(&mut udp_buf) => {
                 match result {
-                    Ok(n) => udp_to_tun(&udp_buf[..n], &tun, &mut dec_buf, &key1, &key2).await,
-                    Err(_) => break,
+                    Ok(n) => udp_to_tun(&udp_buf[..n], &to_tun, &mut dec_buf, &key1, &key2).await,
+                    Err(_) => return,
                 }
             }
         }
 
-        // One wakeup handles the whole burst queued behind it.
-        loop {
-            match tun.try_recv(&mut tun_buf) {
-                Ok(n) if n > 0 => {
-                    tun_to_udp(&tun_buf[..n], &socket, &mut enc_buf, &key1, &key2).await
-                }
-                Ok(_) => {}
-                Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => break,
-                Err(_) => return,
+        // One wakeup handles a burst; cap it so both directions still run.
+        for _ in 0..super::DRAIN_BATCH {
+            match rx.try_recv() {
+                Ok(packet) => tun_to_udp(&packet, &socket, &mut enc_buf, &key1, &key2).await,
+                Err(_) => break,
             }
         }
 
-        loop {
+        for _ in 0..super::DRAIN_BATCH {
             match socket.try_recv(&mut udp_buf) {
-                Ok(n) => udp_to_tun(&udp_buf[..n], &tun, &mut dec_buf, &key1, &key2).await,
+                Ok(n) => udp_to_tun(&udp_buf[..n], &to_tun, &mut dec_buf, &key1, &key2).await,
                 Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => break,
                 Err(_) => return,
             }
@@ -192,7 +190,7 @@ async fn tun_to_udp(
 
 async fn udp_to_tun(
     packet: &[u8],
-    tun: &tun_rs::AsyncDevice,
+    to_tun: &mpsc::Sender<Vec<u8>>,
     dec_buf: &mut [u8],
     key1: &[u8],
     key2: &[u8],
@@ -201,11 +199,5 @@ async fn udp_to_tun(
     if written == 0 {
         return;
     }
-    match tun.try_send(&dec_buf[..written]) {
-        Ok(_) => {}
-        Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => {
-            let _ = tun.send(&dec_buf[..written]).await;
-        }
-        Err(_) => {}
-    }
+    let _ = to_tun.send(dec_buf[..written].to_vec()).await;
 }
