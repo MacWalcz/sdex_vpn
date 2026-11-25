@@ -2,25 +2,25 @@ use clap::Parser;
 use sdex_vpn::vpn::server;
 
 #[derive(Parser)]
-#[command(name = "sdex-server", about = "Serwer VPN SDEx")]
+#[command(name = "sdex-server", about = "SDEx VPN server")]
 struct Args {
-    /// Adres i port nasłuchu UDP
+    /// UDP listen address and port
     #[arg(short, long, default_value = "0.0.0.0:51820")]
     listen: String,
 
-    /// Nazwa interfejsu TUN
+    /// TUN interface name
     #[arg(short, long, default_value = "tun0")]
     tun_name: String,
 
-    /// Adres IP dla interfejsu TUN (serwer)
+    /// IP address for the TUN interface (server)
     #[arg(short, long, default_value = "10.0.0.1")]
     tun_ip: String,
 
-    /// Pierwszy klucz sesyjny
+    /// First session key
     #[arg(long, default_value = "key1")]
     key1: String,
 
-    /// Drugi klucz sesyjny
+    /// Second session key
     #[arg(long, default_value = "key2")]
     key2: String,
 

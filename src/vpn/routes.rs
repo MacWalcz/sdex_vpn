@@ -92,7 +92,7 @@ pub async fn add_default_route(iface: &str) -> Result<(), Box<dyn std::error::Er
         .output_interface(idx)
         .build();
 
-    // Używamy .replace(), aby nadpisać istniejącą trasę domyślną bez błędu EEXIST (-17)
+    // Use .replace() to overwrite an existing default route without an EEXIST (-17) error
     handle.route().add(route).replace().execute().await?;
     println!("[routes] replaced default route with {}", iface);
     Ok(())

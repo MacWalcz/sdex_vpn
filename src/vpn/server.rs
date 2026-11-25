@@ -261,7 +261,7 @@ fn setup_forwarding(subnet: &str, out_iface: &str) -> Result<(), Box<dyn std::er
         if !s.success() {
             return Err("nft add table failed".into());
         }
-        println!("[server] utworzono tabelę nft 'ip nat'");
+        println!("[server] created nft table 'ip nat'");
 
         let s = std::process::Command::new("nft")
             .args([
@@ -284,7 +284,7 @@ fn setup_forwarding(subnet: &str, out_iface: &str) -> Result<(), Box<dyn std::er
         if !s.success() {
             return Err("nft add chain failed".into());
         }
-        println!("[server] utworzono łańcuch nft 'postrouting'");
+        println!("[server] created nft chain 'postrouting'");
     }
 
     let ruleset = std::process::Command::new("nft")
@@ -293,7 +293,7 @@ fn setup_forwarding(subnet: &str, out_iface: &str) -> Result<(), Box<dyn std::er
     let ruleset_str = String::from_utf8_lossy(&ruleset.stdout);
 
     if ruleset_str.contains(subnet) && ruleset_str.contains("masquerade") {
-        println!("[server] NAT już istnieje");
+        println!("[server] NAT already exists");
         return Ok(());
     }
 
@@ -316,7 +316,7 @@ fn setup_forwarding(subnet: &str, out_iface: &str) -> Result<(), Box<dyn std::er
         return Err("nft add rule MASQUERADE failed".into());
     }
 
-    println!("[server] dodano NAT: {} → {}", subnet, out_iface);
+    println!("[server] added NAT: {} → {}", subnet, out_iface);
     Ok(())
 }
 

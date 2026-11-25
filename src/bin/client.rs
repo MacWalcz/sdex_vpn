@@ -2,7 +2,7 @@ use clap::Parser;
 use sdex_vpn::vpn::client;
 
 #[derive(Parser)]
-#[command(name = "sdex-client", about = "Client VPN SDEx")]
+#[command(name = "sdex-client", about = "SDEx VPN client")]
 struct Args {
     /// Server address (IP:port)
     #[arg(short, long)]
