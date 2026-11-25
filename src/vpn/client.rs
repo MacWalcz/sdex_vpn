@@ -59,6 +59,8 @@ pub fn run(
         .next()
         .ok_or("cannot resolve server")?;
 
+    // try_clone creates a distinct TUN queue per call (Linux: opens /dev/net/tun
+    // and attaches with IFF_MULTI_QUEUE), so every worker owns its own queue.
     let mut extra_tuns: Vec<(tun_rs::AsyncDevice, tokio::runtime::Runtime)> =
         Vec::with_capacity(num_threads.saturating_sub(1));
     for _ in 1..num_threads {
@@ -124,43 +126,86 @@ async fn run_worker(
 
     let mut tun_buf = vec![0u8; 65535];
     let mut udp_buf = vec![0u8; 65535];
+    let mut enc_buf = vec![0u8; 65535];
+    let mut dec_buf = vec![0u8; 65535];
 
     println!("[worker {}] started", worker_id);
 
     loop {
         tokio::select! {
             result = tun.recv(&mut tun_buf) => {
-                println!("[worker {}] tun.recv RECEIVED: {:?}", worker_id, result.as_ref().map(|&n| n));
                 match result {
-                    Ok(n) if n > 0 => {
-                        println!("[worker {}] tun.recv: {} bytes", worker_id, n);
-                        let encrypted = sdex::encrypt(&tun_buf[..n], &key1, &key2);
-                        match socket.send(&encrypted).await {
-                        Ok(n) => println!("[worker {}] udp.send: {} bytes do {}", worker_id, n, server_addr),
-                        Err(e) => eprintln!("[worker {}] udp send ERR: {}", worker_id, e),
-                        }
-                    }
-                    Ok(_) => continue,
-                    Err(e) => {
-                        eprintln!("[worker {}] tun.recv: {}", worker_id, e);
-                        break;
-                    }
+                    Ok(n) if n > 0 => tun_to_udp(&tun_buf[..n], &socket, &mut enc_buf, &key1, &key2).await,
+                    Ok(_) => {}
+                    Err(_) => break,
                 }
             }
             result = socket.recv(&mut udp_buf) => {
                 match result {
-                    Ok(n) => {
-                        let decrypted = sdex::decrypt(&udp_buf[..n], &key1, &key2);
-                        if let Err(e) = tun.send(&decrypted).await {
-                            eprintln!("[worker {}] tun.send: {}", worker_id, e);
-                        }
-                    }
-                    Err(e) => {
-                        eprintln!("[worker {}] udp.recv: {}", worker_id, e);
-                        break;
-                    }
+                    Ok(n) => udp_to_tun(&udp_buf[..n], &tun, &mut dec_buf, &key1, &key2).await,
+                    Err(_) => break,
                 }
             }
         }
+
+        // One wakeup handles the whole burst queued behind it.
+        loop {
+            match tun.try_recv(&mut tun_buf) {
+                Ok(n) if n > 0 => {
+                    tun_to_udp(&tun_buf[..n], &socket, &mut enc_buf, &key1, &key2).await
+                }
+                Ok(_) => {}
+                Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => break,
+                Err(_) => return,
+            }
+        }
+
+        loop {
+            match socket.try_recv(&mut udp_buf) {
+                Ok(n) => udp_to_tun(&udp_buf[..n], &tun, &mut dec_buf, &key1, &key2).await,
+                Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => break,
+                Err(_) => return,
+            }
+        }
+    }
+}
+
+async fn tun_to_udp(
+    packet: &[u8],
+    socket: &tokio::net::UdpSocket,
+    enc_buf: &mut [u8],
+    key1: &[u8],
+    key2: &[u8],
+) {
+    let written = sdex::encrypt_into(packet, enc_buf, key1, key2);
+    if written == 0 {
+        return;
+    }
+    match socket.try_send(&enc_buf[..written]) {
+        Ok(_) => {}
+        Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => {
+            let _ = socket.send(&enc_buf[..written]).await;
+        }
+        Err(_) => {}
+    }
+}
+
+async fn udp_to_tun(
+    packet: &[u8],
+    tun: &tun_rs::AsyncDevice,
+    dec_buf: &mut [u8],
+    key1: &[u8],
+    key2: &[u8],
+) {
+    let written = sdex::decrypt_into(packet, dec_buf, key1, key2);
+    if written == 0 {
+        return;
+    }
+    match tun.try_send(&dec_buf[..written]) {
+        Ok(_) => {}
+        Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => {
+            let _ = tun.send(&dec_buf[..written]).await;
+        }
+        Err(_) => {}
     }
 }

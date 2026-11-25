@@ -53,6 +53,8 @@ pub fn run(
 
     let client_map: Arc<HashMap<Ipv4Addr, SocketAddr>> = Arc::new(HashMap::new());
 
+    // try_clone creates a distinct TUN queue per call (Linux: opens /dev/net/tun
+    // and attaches with IFF_MULTI_QUEUE), so every worker owns its own queue.
     let mut extra_tuns = Vec::with_capacity(num_threads.saturating_sub(1));
     for _ in 1..num_threads {
         let rt = tokio::runtime::Builder::new_current_thread()
@@ -117,6 +119,8 @@ async fn run_worker(
 
     let mut tun_buf = vec![0u8; 65535];
     let mut udp_buf = vec![0u8; 65535];
+    let mut enc_buf = vec![0u8; 65535];
+    let mut dec_buf = vec![0u8; 65535];
 
     println!("[worker {}] started", worker_id);
 
@@ -125,80 +129,108 @@ async fn run_worker(
             result = socket.recv_from(&mut udp_buf) => {
                 match result {
                     Ok((n, src)) => {
-                        println!("[worker {}] udp.recv_from: {} bytes od {}", worker_id, n, src);
-
-                        let decrypted = sdex::decrypt(&udp_buf[..n], &key1, &key2);
-
-                        if decrypted.len() >= 20 {
-                            let src_ip = Ipv4Addr::new(
-                                decrypted[12], decrypted[13], decrypted[14], decrypted[15],
-                            );
-
-                            let is_new = {
-                                let map = client_map.pin();
-                                map.insert(src_ip, src).is_none()
-                            };
-
-                            if is_new {
-                                println!("[worker {}] NOWY KLIENT: {} <-> {}", worker_id, src_ip, src);
-                            }
-                        }
-
-                        match tun.send(&decrypted).await {
-                            Ok(_) => println!("[worker {}] tun.send: {} bytes OK", worker_id, decrypted.len()),
-                            Err(e) => eprintln!("[worker {}] tun.send ERR: {}", worker_id, e),
-                        }
+                        udp_to_tun(&udp_buf[..n], src, &tun, &mut dec_buf, &key1, &key2, &client_map).await
                     }
-                    Err(e) => {
-                        eprintln!("[worker {}] udp.recv_from ERR: {}", worker_id, e);
-                        break;
-                    }
+                    Err(_) => break,
                 }
             }
             result = tun.recv(&mut tun_buf) => {
                 match result {
                     Ok(n) if n > 0 => {
-                        if n < 20 {
-                            continue;
-                        }
-
-                        let dst_ip = Ipv4Addr::new(
-                            tun_buf[16], tun_buf[17], tun_buf[18], tun_buf[19],
-                        );
-
-                        let dst = {
-                            let map = client_map.pin();
-                            map.get(&dst_ip).copied()
-                        };
-
-                        let encrypted = sdex::encrypt(&tun_buf[..n], &key1, &key2);
-
-                        match dst {
-                            Some(addr) => {
-                                match socket.send_to(&encrypted, addr).await {
-                                    Ok(sent) => println!(
-                                        "[worker {}] tun.recv {} bytes (dst {}) -> udp.send_to {} do {}",
-                                        worker_id, n, dst_ip, sent, addr
-                                    ),
-                                    Err(e) => eprintln!("[worker {}] udp.send_to ERR: {}", worker_id, e),
-                                }
-                            }
-                            None => {
-                                println!(
-                                    "[worker {}] tun.recv {} bytes, dst {} – brak w mapie, drop",
-                                    worker_id, n, dst_ip
-                                );
-                            }
-                        }
+                        tun_to_udp(&tun_buf[..n], &socket, &mut enc_buf, &key1, &key2, &client_map).await
                     }
-                    Ok(_) => continue,
-                    Err(e) => {
-                        eprintln!("[worker {}] tun.recv ERR: {}", worker_id, e);
-                        break;
-                    }
+                    Ok(_) => {}
+                    Err(_) => break,
                 }
             }
         }
+
+        // One wakeup handles the whole burst queued behind it.
+        loop {
+            match tun.try_recv(&mut tun_buf) {
+                Ok(n) if n > 0 => {
+                    tun_to_udp(&tun_buf[..n], &socket, &mut enc_buf, &key1, &key2, &client_map).await
+                }
+                Ok(_) => {}
+                Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => break,
+                Err(_) => return,
+            }
+        }
+
+        loop {
+            match socket.try_recv_from(&mut udp_buf) {
+                Ok((n, src)) => {
+                    udp_to_tun(&udp_buf[..n], src, &tun, &mut dec_buf, &key1, &key2, &client_map).await
+                }
+                Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => break,
+                Err(_) => return,
+            }
+        }
+    }
+}
+
+async fn udp_to_tun(
+    packet: &[u8],
+    src: SocketAddr,
+    tun: &tun_rs::AsyncDevice,
+    dec_buf: &mut [u8],
+    key1: &[u8],
+    key2: &[u8],
+    client_map: &HashMap<Ipv4Addr, SocketAddr>,
+) {
+    let written = sdex::decrypt_into(packet, dec_buf, key1, key2);
+    if written == 0 {
+        return;
+    }
+    let plaintext = &dec_buf[..written];
+
+    if written >= 20 {
+        let src_ip = Ipv4Addr::new(plaintext[12], plaintext[13], plaintext[14], plaintext[15]);
+        let map = client_map.pin();
+        map.insert(src_ip, src);
+    }
+
+    match tun.try_send(plaintext) {
+        Ok(_) => {}
+        Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => {
+            let _ = tun.send(plaintext).await;
+        }
+        Err(_) => {}
+    }
+}
+
+async fn tun_to_udp(
+    packet: &[u8],
+    socket: &tokio::net::UdpSocket,
+    enc_buf: &mut [u8],
+    key1: &[u8],
+    key2: &[u8],
+    client_map: &HashMap<Ipv4Addr, SocketAddr>,
+) {
+    if packet.len() < 20 {
+        return;
+    }
+
+    let dst_ip = Ipv4Addr::new(packet[16], packet[17], packet[18], packet[19]);
+    let dst = {
+        let map = client_map.pin();
+        map.get(&dst_ip).copied()
+    };
+    let Some(addr) = dst else {
+        return;
+    };
+
+    let written = sdex::encrypt_into(packet, enc_buf, key1, key2);
+    if written == 0 {
+        return;
+    }
+
+    match socket.try_send_to(&enc_buf[..written], addr) {
+        Ok(_) => {}
+        Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => {
+            let _ = socket.send_to(&enc_buf[..written], addr).await;
+        }
+        Err(_) => {}
     }
 }
 
