@@ -3,6 +3,12 @@
 ## 1. General Project Description
 SDEx VPN is a custom VPN application operating at the L3 layer (TUN interface), written in **Rust**. The main goal of the project is the implementation and performance analysis of a proprietary encryption algorithm **SDEx**, based on the ultra-fast **BLAKE3** hash function. The application consists of two binaries: `client` and `server`, and its architecture is optimized for high throughput and low latency.
 
+> **See also:**
+> * [`doc/infrastructure.md`](infrastructure.md) — the test lab (three VMs),
+>   addressing, SSH access, kernel/NAT prerequisites, inspection runbook.
+> * [`doc/testing.md`](testing.md) — how to run the smoke test, what it asserts,
+>   measured results, and the performance benchmarking methodology.
+
 ## 2. Code Architecture and Main Modules
 The project uses `Cargo` and is divided into modules:
 *   `src/sdex.rs`: Implementation of the SDEx encryption/decryption algorithm.
@@ -45,15 +51,10 @@ The server uses a `papaya::HashMap` (lock-free) to map the client's internal IP 
 *   When the server receives a packet, it decrypts it, extracts the source IP from the IP header (bytes 12-15), and updates the map.
 *   When a return packet exits the TUN, the server extracts the destination IP (bytes 16-19), looks up the client's UDP address in the map, and sends the encrypted packet there.
 
-## 5. Performance Testing Methodology
-To conduct comparative studies (SDEx vs OpenVPN vs WireGuard), the following methodology should be applied:
-*   **Environment:** 3 virtual machines (Client, VPN Server, Target). Target is a machine in the same LAN running `iperf3 -s`.
-*   **Tools:** `iperf3` (TCP/UDP throughput), `ping` (latency/jitter), `pidstat` (CPU usage).
-*   **Scenarios:**
-    *   Baseline (without VPN) - to determine the overhead.
-    *   TCP: `iperf3 -c <target_ip> -t 10` (single-stream) and `-P 4` (multi-stream).
-    *   UDP: `iperf3 -c <target_ip> -u -b 1G -l <size> -t 10` (tests for small packets e.g., 64B, medium 512B, and large 1200B).
-*   **Statistics:** Minimum 30 iterations for each test. Rejection of the first 2-3 iterations (warm-up). Calculation of mean, median, and standard deviation. Application of the Mann-Whitney U test to verify the statistical significance of differences.
+## 5. Testing
+Test procedures and results are kept out of this document:
+*   **Functional:** `doc/testing.md` — how to run `test/sdex_vpn_test.sh`, what each step asserts, the measured pass/fail matrix, and the state to reset between runs.
+*   **Performance:** same file, section 3 — iperf3 methodology (SDEx vs OpenVPN vs WireGuard), scenarios, statistical treatment, and the first SDEx result set (30 iterations per scenario, CPU-bound at ~206 Mbps TCP).
 
 ## 6. Running the Application
 The applications require root privileges (to create TUN and modify routing/NAT).

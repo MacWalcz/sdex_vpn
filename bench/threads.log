@@ -1,0 +1,36 @@
+=== threads=1
+      3 packets transmitted, 3 received, 0% packet loss, time 2018ms
+      100 packets transmitted, 100 received, 0% packet loss, time 2312ms
+   0 tcp1         212.56 Mbps  retr=223  cpu=94.3%
+   0 tcp4         205.43 Mbps  retr=687  cpu=96.5%
+   1 tcp1         215.17 Mbps  retr=115  cpu=92.8%
+   1 tcp4         217.00 Mbps  retr=488  cpu=97.7%
+   2 tcp1         218.81 Mbps  retr=218  cpu=92.8%
+   2 tcp4         209.48 Mbps  retr=546  cpu=97.0%
+   3 tcp1         215.81 Mbps  retr=122  cpu=90.9%
+   3 tcp4         215.51 Mbps  retr=449  cpu=97.1%
+[cleanup] killing daemons and resetting kernel state ...
+=== threads=2
+      3 packets transmitted, 3 received, 0% packet loss, time 2045ms
+      100 packets transmitted, 100 received, 0% packet loss, time 2258ms
+   0 tcp1         202.31 Mbps  retr=121  cpu=89.8%
+   0 tcp4         202.09 Mbps  retr=565  cpu=95.8%
+   1 tcp1         207.15 Mbps  retr=219  cpu=90.4%
+   1 tcp4         203.27 Mbps  retr=804  cpu=96.2%
+   2 tcp1         207.45 Mbps  retr=88  cpu=92.8%
+   2 tcp4         205.69 Mbps  retr=785  cpu=96.4%
+   3 tcp1         202.63 Mbps  retr=106  cpu=91.2%
+   3 tcp4         199.92 Mbps  retr=756  cpu=97.2%
+[cleanup] killing daemons and resetting kernel state ...
+=== threads=4
+      3 packets transmitted, 3 received, 0% packet loss, time 2013ms
+      100 packets transmitted, 100 received, 0% packet loss, time 2268ms
+   0 tcp1         211.69 Mbps  retr=221  cpu=94.6%
+   0 tcp4         205.25 Mbps  retr=734  cpu=94.3%
+   1 tcp1         205.84 Mbps  retr=235  cpu=91.4%
+   1 tcp4         204.85 Mbps  retr=824  cpu=94.1%
+   2 tcp1         201.46 Mbps  retr=128  cpu=89.1%
+   2 tcp4         204.60 Mbps  retr=656  cpu=95.8%
+   3 tcp1         200.42 Mbps  retr=194  cpu=90.8%
+   3 tcp4         208.17 Mbps  retr=758  cpu=96.2%
+[cleanup] killing daemons and resetting kernel state ...

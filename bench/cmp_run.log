@@ -1,0 +1,973 @@
+===== 22:56:33 starting baseline =====
+=== three-way tunnel benchmark [cmp] vpn=baseline ===
+    iterations 10 (warm-up 3), 5s each
+    scenarios  tcp1, tcp4, tcp1_mss, udp64, udp512, udp1200, udp1472
+    results    /home/admin/projects/algo/bench/cmp_baseline.jsonl
+
+server default route: default via 192.168.76.1 dev eth2 
+
+[baseline_a] 192.168.67.2 -> 192.168.67.3 (no tunnel)
+   0 tcp1       15516.17 Mbps  retr=0
+   0 tcp4       20829.04 Mbps  retr=5
+   0 tcp1_mss   14893.12 Mbps  retr=0
+   0 udp64         99.91 Mbps  jitter=0.002ms loss=0.08%
+   0 udp512       499.41 Mbps  jitter=0.004ms loss=0.11%
+   0 udp1200      999.68 Mbps  jitter=0.005ms loss=0.02%
+   0 udp1472      999.81 Mbps  jitter=0.007ms loss=0.01%
+   1 tcp1       15328.24 Mbps  retr=0
+   1 tcp4       21648.02 Mbps  retr=4
+   1 tcp1_mss   14271.11 Mbps  retr=0
+   1 udp64         99.83 Mbps  jitter=0.002ms loss=0.16%
+   1 udp512       499.66 Mbps  jitter=0.006ms loss=0.06%
+   1 udp1200      999.43 Mbps  jitter=0.003ms loss=0.04%
+   1 udp1472      999.81 Mbps  jitter=0.003ms loss=0.01%
+   2 tcp1       15803.44 Mbps  retr=0
+   2 tcp4       22178.30 Mbps  retr=0
+   2 tcp1_mss   14379.50 Mbps  retr=0
+   2 udp64         99.74 Mbps  jitter=0.003ms loss=0.25%
+   2 udp512       499.85 Mbps  jitter=0.005ms loss=0.02%
+   2 udp1200      999.83 Mbps  jitter=0.002ms loss=0.01%
+   2 udp1472      999.70 Mbps  jitter=0.002ms loss=0.02%
+   3 tcp1       15334.46 Mbps  retr=0
+   3 tcp4       21181.79 Mbps  retr=6
+   3 tcp1_mss   13586.38 Mbps  retr=0
+   3 udp64         99.89 Mbps  jitter=0.004ms loss=0.09%
+   3 udp512       499.95 Mbps  jitter=0.003ms loss=0.00%
+   3 udp1200      999.87 Mbps  jitter=0.006ms loss=0.00%
+   3 udp1472      999.63 Mbps  jitter=0.005ms loss=0.03%
+   4 tcp1       14505.33 Mbps  retr=0
+   4 tcp4       11870.60 Mbps  retr=2
+   4 tcp1_mss   15035.47 Mbps  retr=0
+   4 udp64         99.89 Mbps  jitter=0.004ms loss=0.10%
+   4 udp512       499.81 Mbps  jitter=0.008ms loss=0.03%
+   4 udp1200      999.60 Mbps  jitter=0.004ms loss=0.03%
+   4 udp1472      999.57 Mbps  jitter=0.011ms loss=0.03%
+   5 tcp1       15623.74 Mbps  retr=0
+   5 tcp4       22336.26 Mbps  retr=0
+   5 tcp1_mss   15600.33 Mbps  retr=0
+   5 udp64         99.98 Mbps  jitter=0.003ms loss=0.01%
+   5 udp512       499.84 Mbps  jitter=0.003ms loss=0.02%
+   5 udp1200      999.46 Mbps  jitter=0.008ms loss=0.04%
+   5 udp1472      999.74 Mbps  jitter=0.003ms loss=0.02%
+   6 tcp1       16059.04 Mbps  retr=0
+   6 tcp4       22843.32 Mbps  retr=4
+   6 tcp1_mss   15171.24 Mbps  retr=0
+   6 udp64         99.75 Mbps  jitter=0.006ms loss=0.24%
+   6 udp512       499.87 Mbps  jitter=0.004ms loss=0.01%
+   6 udp1200      999.60 Mbps  jitter=0.003ms loss=0.03%
+   6 udp1472      999.70 Mbps  jitter=0.005ms loss=0.02%
+   7 tcp1       14791.00 Mbps  retr=0
+   7 tcp4       21609.85 Mbps  retr=39
+   7 tcp1_mss   14683.86 Mbps  retr=0
+   7 udp64         99.86 Mbps  jitter=0.003ms loss=0.12%
+   7 udp512       499.93 Mbps  jitter=0.003ms loss=0.00%
+   7 udp1200      998.58 Mbps  jitter=0.007ms loss=0.13%
+   7 udp1472      999.78 Mbps  jitter=0.004ms loss=0.01%
+   8 tcp1       15790.65 Mbps  retr=0
+   8 tcp4       20162.67 Mbps  retr=1469
+   8 tcp1_mss   14758.00 Mbps  retr=0
+   8 udp64         99.98 Mbps  jitter=0.004ms loss=0.01%
+   8 udp512       499.88 Mbps  jitter=0.002ms loss=0.01%
+   8 udp1200      999.83 Mbps  jitter=0.002ms loss=0.00%
+   8 udp1472      999.67 Mbps  jitter=0.005ms loss=0.02%
+   9 tcp1       15501.46 Mbps  retr=0
+   9 tcp4       12004.23 Mbps  retr=0
+   9 tcp1_mss   14402.65 Mbps  retr=0
+   9 udp64         99.97 Mbps  jitter=0.009ms loss=0.02%
+   9 udp512       499.95 Mbps  jitter=0.002ms loss=0.00%
+   9 udp1200      999.54 Mbps  jitter=0.003ms loss=0.04%
+   9 udp1472      999.48 Mbps  jitter=0.009ms loss=0.04%
+
+[baseline_b] 192.168.67.3 -> 192.168.76.4 (no tunnel)
+   0 tcp1       30209.74 Mbps  retr=0
+   0 tcp4       32844.15 Mbps  retr=31
+   0 tcp1_mss   28543.03 Mbps  retr=25
+   0 udp64         99.89 Mbps  jitter=0.002ms loss=0.11%
+   0 udp512       499.78 Mbps  jitter=0.008ms loss=0.04%
+   0 udp1200      999.87 Mbps  jitter=0.004ms loss=0.01%
+   0 udp1472      999.80 Mbps  jitter=0.003ms loss=0.02%
+   1 tcp1       33911.15 Mbps  retr=0
+   1 tcp4       33269.23 Mbps  retr=2663
+   1 tcp1_mss   31643.69 Mbps  retr=0
+   1 udp64         99.95 Mbps  jitter=0.006ms loss=0.05%
+   1 udp512       499.94 Mbps  jitter=0.002ms loss=0.01%
+   1 udp1200      999.49 Mbps  jitter=0.005ms loss=0.04%
+   1 udp1472      999.51 Mbps  jitter=0.003ms loss=0.04%
+   2 tcp1       35603.29 Mbps  retr=0
+   2 tcp4       36906.24 Mbps  retr=33
+   2 tcp1_mss   27651.94 Mbps  retr=25
+   2 udp64         99.94 Mbps  jitter=0.002ms loss=0.05%
+   2 udp512       499.93 Mbps  jitter=0.003ms loss=0.01%
+   2 udp1200      999.52 Mbps  jitter=0.005ms loss=0.04%
+   2 udp1472      999.90 Mbps  jitter=0.004ms loss=0.00%
+   3 tcp1       28473.19 Mbps  retr=92
+   3 tcp4       37106.12 Mbps  retr=13
+   3 tcp1_mss   25335.28 Mbps  retr=44
+   3 udp64         99.91 Mbps  jitter=0.003ms loss=0.09%
+   3 udp512       499.87 Mbps  jitter=0.007ms loss=0.02%
+   3 udp1200      999.61 Mbps  jitter=0.006ms loss=0.03%
+   3 udp1472      999.71 Mbps  jitter=0.009ms loss=0.02%
+   4 tcp1       31112.64 Mbps  retr=5
+   4 tcp4       36538.58 Mbps  retr=54
+   4 tcp1_mss   33944.26 Mbps  retr=29
+   4 udp64         99.85 Mbps  jitter=0.002ms loss=0.15%
+   4 udp512       499.82 Mbps  jitter=0.003ms loss=0.03%
+   4 udp1200      999.74 Mbps  jitter=0.005ms loss=0.02%
+   4 udp1472      999.78 Mbps  jitter=0.006ms loss=0.01%
+   5 tcp1       31584.18 Mbps  retr=43
+   5 tcp4       38810.32 Mbps  retr=0
+   5 tcp1_mss   36202.67 Mbps  retr=0
+   5 udp64         99.97 Mbps  jitter=0.007ms loss=0.02%
+   5 udp512       499.89 Mbps  jitter=0.011ms loss=0.01%
+   5 udp1200      999.89 Mbps  jitter=0.011ms loss=0.01%
+   5 udp1472      999.95 Mbps  jitter=0.004ms loss=0.00%
+   6 tcp1       26274.99 Mbps  retr=67
+   6 tcp4       39333.22 Mbps  retr=41
+   6 tcp1_mss   34255.86 Mbps  retr=0
+   6 udp64         99.93 Mbps  jitter=0.002ms loss=0.06%
+   6 udp512       499.81 Mbps  jitter=0.007ms loss=0.03%
+   6 udp1200      999.89 Mbps  jitter=0.004ms loss=0.00%
+   6 udp1472      999.76 Mbps  jitter=0.003ms loss=0.02%
+   7 tcp1       35670.91 Mbps  retr=0
+   7 tcp4       32839.10 Mbps  retr=84
+   7 tcp1_mss   30281.48 Mbps  retr=13
+   7 udp64         99.83 Mbps  jitter=0.008ms loss=0.16%
+   7 udp512       499.95 Mbps  jitter=0.004ms loss=0.00%
+   7 udp1200      999.90 Mbps  jitter=0.005ms loss=0.00%
+   7 udp1472      999.57 Mbps  jitter=0.004ms loss=0.04%
+   8 tcp1       32981.89 Mbps  retr=33
+   8 tcp4       33646.64 Mbps  retr=110
+   8 tcp1_mss   27967.52 Mbps  retr=148
+   8 udp64         99.93 Mbps  jitter=0.002ms loss=0.07%
+   8 udp512       499.92 Mbps  jitter=0.006ms loss=0.01%
+   8 udp1200      999.30 Mbps  jitter=0.006ms loss=0.06%
+   8 udp1472      999.67 Mbps  jitter=0.004ms loss=0.03%
+   9 tcp1       31132.96 Mbps  retr=0
+   9 tcp4       35104.36 Mbps  retr=27
+   9 tcp1_mss   29863.06 Mbps  retr=0
+   9 udp64         99.96 Mbps  jitter=0.002ms loss=0.03%
+   9 udp512       499.81 Mbps  jitter=0.005ms loss=0.03%
+   9 udp1200      999.45 Mbps  jitter=0.004ms loss=0.05%
+   9 udp1472      999.66 Mbps  jitter=0.006ms loss=0.03%
+
+raw results: /home/admin/projects/algo/bench/cmp_baseline.jsonl
+
+[cleanup] ...
+===== 23:08:48 finished baseline (rc=0) =====
+===== 23:08:48 starting sdex =====
+=== three-way tunnel benchmark [cmp] vpn=sdex ===
+    iterations 30 (warm-up 3), 5s each
+    scenarios  tcp1, tcp4, tcp1_mss, udp64, udp512, udp1200, udp1472
+    results    /home/admin/projects/algo/bench/cmp_sdex.jsonl
+
+server default route: default via 192.168.76.1 dev eth2 
+
+[tunnel:sdex] bringing it up ...
+      tunnel up: tun0
+      3 packets transmitted, 3 received, 0% packet loss, time 2003ms
+      MTU: client mtu 1500, server mtu 1500
+
+[latency] ping -c 100
+      100 packets transmitted, 100 received, 0% packet loss, time 2309ms
+      rtt min/avg/max/mdev = 0.515/0.784/1.480/0.202 ms
+
+[tunnel:sdex] throughput scenarios
+   0 tcp1         212.36 Mbps  retr=245  cpu=94.1%
+   0 tcp4         198.06 Mbps  retr=766  cpu=95.3%
+   0 tcp1_mss     207.85 Mbps  retr=113  cpu=91.4%
+   0 udp64         36.63 Mbps  jitter=0.019ms loss=61.84%  cpu=95.3%
+   0 udp512       159.30 Mbps  jitter=0.047ms loss=67.89%  cpu=99.2%
+   0 udp1200      193.51 Mbps  jitter=0.057ms loss=80.56%  cpu=99.2%
+   0 udp1472      204.27 Mbps  jitter=0.102ms loss=79.06%  cpu=99.0%
+   1 tcp1         201.05 Mbps  retr=191  cpu=90.2%
+   1 tcp4         198.22 Mbps  retr=738  cpu=94.7%
+   1 tcp1_mss     202.73 Mbps  retr=197  cpu=93.1%
+   1 udp64         49.80 Mbps  jitter=0.013ms loss=50.16%  cpu=99.1%
+   1 udp512       139.88 Mbps  jitter=0.035ms loss=71.78%  cpu=99.2%
+   1 udp1200      203.68 Mbps  jitter=0.080ms loss=79.28%  cpu=99.0%
+   1 udp1472      230.87 Mbps  jitter=0.100ms loss=76.42%  cpu=99.3%
+   2 tcp1         210.98 Mbps  retr=136  cpu=93.8%
+   2 tcp4         206.72 Mbps  retr=799  cpu=96.1%
+   2 tcp1_mss     199.78 Mbps  retr=125  cpu=93.8%
+   2 udp64         46.21 Mbps  jitter=0.023ms loss=53.69%  cpu=98.8%
+   2 udp512       142.47 Mbps  jitter=0.038ms loss=71.19%  cpu=99.1%
+   2 udp1200      188.86 Mbps  jitter=0.084ms loss=80.67%  cpu=99.4%
+   2 udp1472      214.82 Mbps  jitter=0.091ms loss=77.84%  cpu=99.1%
+   3 tcp1         197.34 Mbps  retr=98  cpu=88.5%
+   3 tcp4         211.13 Mbps  retr=513  cpu=96.9%
+   3 tcp1_mss     211.39 Mbps  retr=214  cpu=90.7%
+   3 udp64         43.01 Mbps  jitter=0.022ms loss=56.87%  cpu=98.9%
+   3 udp512       142.99 Mbps  jitter=0.030ms loss=71.13%  cpu=99.4%
+   3 udp1200      195.04 Mbps  jitter=0.066ms loss=80.12%  cpu=98.9%
+   3 udp1472      209.34 Mbps  jitter=0.064ms loss=78.56%  cpu=99.3%
+   4 tcp1         209.68 Mbps  retr=186  cpu=93.8%
+   4 tcp4         210.06 Mbps  retr=596  cpu=97.0%
+   4 tcp1_mss     202.52 Mbps  retr=97  cpu=94.3%
+   4 udp64         42.81 Mbps  jitter=0.014ms loss=55.41%  cpu=95.3%
+   4 udp512       144.77 Mbps  jitter=0.045ms loss=70.81%  cpu=99.1%
+   4 udp1200      199.06 Mbps  jitter=0.064ms loss=79.25%  cpu=95.6%
+   4 udp1472      212.19 Mbps  jitter=0.064ms loss=77.89%  cpu=95.8%
+   5 tcp1         197.70 Mbps  retr=138  cpu=87.7%
+   5 tcp4         209.12 Mbps  retr=720  cpu=96.4%
+   5 tcp1_mss     196.86 Mbps  retr=166  cpu=89.9%
+   5 udp64         44.47 Mbps  jitter=0.018ms loss=55.47%  cpu=99.3%
+   5 udp512       172.14 Mbps  jitter=0.036ms loss=65.47%  cpu=99.1%
+   5 udp1200      189.07 Mbps  jitter=0.107ms loss=80.46%  cpu=99.2%
+   5 udp1472      229.07 Mbps  jitter=0.091ms loss=76.65%  cpu=99.1%
+   6 tcp1         184.51 Mbps  retr=93  cpu=89.6%
+   6 tcp4         196.85 Mbps  retr=855  cpu=93.5%
+   6 tcp1_mss     207.16 Mbps  retr=230  cpu=94.4%
+   6 udp64         41.48 Mbps  jitter=0.018ms loss=58.41%  cpu=98.9%
+   6 udp512       164.84 Mbps  jitter=0.032ms loss=66.91%  cpu=99.3%
+   6 udp1200      194.10 Mbps  jitter=0.065ms loss=80.48%  cpu=99.1%
+   6 udp1472      239.98 Mbps  jitter=0.060ms loss=75.52%  cpu=99.4%
+   7 tcp1         199.98 Mbps  retr=197  cpu=91.2%
+   7 tcp4         205.63 Mbps  retr=708  cpu=95.2%
+   7 tcp1_mss     208.59 Mbps  retr=176  cpu=91.7%
+   7 udp64         49.97 Mbps  jitter=0.016ms loss=49.92%  cpu=99.0%
+   7 udp512       150.30 Mbps  jitter=0.039ms loss=69.73%  cpu=99.1%
+   7 udp1200      220.02 Mbps  jitter=0.087ms loss=77.54%  cpu=99.4%
+   7 udp1472      219.29 Mbps  jitter=0.081ms loss=77.65%  cpu=98.9%
+   8 tcp1         203.39 Mbps  retr=151  cpu=92.5%
+   8 tcp4         193.20 Mbps  retr=964  cpu=95.2%
+   8 tcp1_mss     207.34 Mbps  retr=136  cpu=93.7%
+   8 udp64         46.07 Mbps  jitter=0.013ms loss=52.01%  cpu=95.3%
+   8 udp512       142.87 Mbps  jitter=0.047ms loss=71.17%  cpu=99.2%
+   8 udp1200      194.53 Mbps  jitter=0.067ms loss=79.73%  cpu=95.8%
+   8 udp1472      209.75 Mbps  jitter=0.074ms loss=78.43%  cpu=99.1%
+   9 tcp1         194.34 Mbps  retr=129  cpu=91.4%
+   9 tcp4         209.22 Mbps  retr=578  cpu=96.2%
+   9 tcp1_mss     203.08 Mbps  retr=69  cpu=90.3%
+   9 udp64         39.06 Mbps  jitter=0.017ms loss=60.82%  cpu=99.1%
+   9 udp512       151.35 Mbps  jitter=0.040ms loss=69.45%  cpu=99.3%
+   9 udp1200      195.14 Mbps  jitter=0.079ms loss=80.01%  cpu=99.2%
+   9 udp1472      204.77 Mbps  jitter=0.100ms loss=78.94%  cpu=99.1%
+  10 tcp1         205.24 Mbps  retr=116  cpu=91.4%
+  10 tcp4         192.10 Mbps  retr=949  cpu=93.8%
+  10 tcp1_mss     200.38 Mbps  retr=111  cpu=90.3%
+  10 udp64         46.57 Mbps  jitter=0.016ms loss=53.37%  cpu=99.1%
+  10 udp512       173.86 Mbps  jitter=0.038ms loss=65.01%  cpu=99.2%
+  10 udp1200      181.46 Mbps  jitter=0.063ms loss=81.09%  cpu=95.8%
+  10 udp1472      209.71 Mbps  jitter=0.094ms loss=78.52%  cpu=99.1%
+  11 tcp1         207.03 Mbps  retr=135  cpu=92.5%
+  11 tcp4         192.86 Mbps  retr=661  cpu=95.3%
+  11 tcp1_mss     200.70 Mbps  retr=45  cpu=94.4%
+  11 udp64         45.27 Mbps  jitter=0.013ms loss=52.85%  cpu=95.2%
+  11 udp512       132.88 Mbps  jitter=0.078ms loss=73.32%  cpu=99.0%
+  11 udp1200      189.63 Mbps  jitter=0.089ms loss=80.61%  cpu=99.4%
+  11 udp1472      216.25 Mbps  jitter=0.084ms loss=78.25%  cpu=99.1%
+  12 tcp1         195.59 Mbps  retr=126  cpu=89.9%
+  12 tcp4         210.28 Mbps  retr=619  cpu=96.9%
+  12 tcp1_mss     195.09 Mbps  retr=54  cpu=90.0%
+  12 udp64         40.91 Mbps  jitter=0.019ms loss=58.97%  cpu=99.4%
+  12 udp512       149.21 Mbps  jitter=0.068ms loss=69.76%  cpu=98.9%
+  12 udp1200      194.06 Mbps  jitter=0.094ms loss=80.11%  cpu=95.4%
+  12 udp1472      200.08 Mbps  jitter=0.068ms loss=79.15%  cpu=95.8%
+  13 tcp1         194.13 Mbps  retr=113  cpu=92.3%
+  13 tcp4         190.15 Mbps  retr=664  cpu=92.7%
+  13 tcp1_mss     200.55 Mbps  retr=81  cpu=92.1%
+  13 udp64         43.69 Mbps  jitter=0.009ms loss=54.48%  cpu=95.2%
+  13 udp512       131.64 Mbps  jitter=0.066ms loss=73.61%  cpu=99.2%
+  13 udp1200      193.55 Mbps  jitter=0.052ms loss=79.84%  cpu=95.6%
+  13 udp1472      206.67 Mbps  jitter=0.069ms loss=79.21%  cpu=99.0%
+  14 tcp1         207.21 Mbps  retr=119  cpu=92.3%
+  14 tcp4         189.61 Mbps  retr=919  cpu=93.0%
+  14 tcp1_mss     205.67 Mbps  retr=122  cpu=92.5%
+  14 udp64         44.05 Mbps  jitter=0.009ms loss=55.86%  cpu=99.1%
+  14 udp512       157.24 Mbps  jitter=0.028ms loss=68.24%  cpu=98.8%
+  14 udp1200      196.59 Mbps  jitter=0.089ms loss=79.98%  cpu=99.4%
+  14 udp1472      223.82 Mbps  jitter=0.094ms loss=77.19%  cpu=95.2%
+  15 tcp1         202.93 Mbps  retr=151  cpu=93.4%
+  15 tcp4         208.14 Mbps  retr=606  cpu=96.7%
+  15 tcp1_mss     210.79 Mbps  retr=93  cpu=91.9%
+  15 udp64         46.84 Mbps  jitter=0.015ms loss=53.11%  cpu=99.2%
+  15 udp512       148.98 Mbps  jitter=0.053ms loss=69.95%  cpu=99.3%
+  15 udp1200      189.44 Mbps  jitter=0.072ms loss=80.62%  cpu=98.9%
+  15 udp1472      202.92 Mbps  jitter=0.108ms loss=79.23%  cpu=99.2%
+  16 tcp1         197.49 Mbps  retr=147  cpu=89.8%
+  16 tcp4         211.53 Mbps  retr=721  cpu=97.5%
+  16 tcp1_mss     202.81 Mbps  retr=90  cpu=93.9%
+  16 udp64         49.33 Mbps  jitter=0.014ms loss=50.54%  cpu=99.1%
+  16 udp512       160.72 Mbps  jitter=0.040ms loss=67.67%  cpu=99.1%
+  16 udp1200      191.18 Mbps  jitter=0.088ms loss=80.46%  cpu=99.1%
+  16 udp1472      200.96 Mbps  jitter=0.079ms loss=79.06%  cpu=95.8%
+  17 tcp1         201.15 Mbps  retr=127  cpu=91.6%
+  17 tcp4         198.33 Mbps  retr=979  cpu=94.7%
+  17 tcp1_mss     210.26 Mbps  retr=86  cpu=94.1%
+  17 udp64         49.78 Mbps  jitter=0.021ms loss=50.17%  cpu=99.3%
+  17 udp512       161.64 Mbps  jitter=0.068ms loss=67.31%  cpu=95.2%
+  17 udp1200      204.38 Mbps  jitter=0.063ms loss=79.19%  cpu=95.1%
+  17 udp1472      214.75 Mbps  jitter=0.093ms loss=78.02%  cpu=99.2%
+  18 tcp1         207.34 Mbps  retr=178  cpu=93.2%
+  18 tcp4         190.56 Mbps  retr=811  cpu=92.2%
+  18 tcp1_mss     190.19 Mbps  retr=128  cpu=91.4%
+  18 udp64         37.57 Mbps  jitter=0.015ms loss=60.86%  cpu=95.1%
+  18 udp512       134.89 Mbps  jitter=0.026ms loss=72.95%  cpu=99.1%
+  18 udp1200      201.78 Mbps  jitter=0.100ms loss=79.29%  cpu=99.2%
+  18 udp1472      207.37 Mbps  jitter=0.097ms loss=78.72%  cpu=99.1%
+  19 tcp1         199.58 Mbps  retr=218  cpu=91.6%
+  19 tcp4         192.91 Mbps  retr=918  cpu=93.2%
+  19 tcp1_mss     203.36 Mbps  retr=108  cpu=91.5%
+  19 udp64         42.37 Mbps  jitter=0.017ms loss=57.55%  cpu=95.0%
+  19 udp512       168.49 Mbps  jitter=0.047ms loss=66.10%  cpu=99.1%
+  19 udp1200      196.38 Mbps  jitter=0.080ms loss=80.22%  cpu=99.1%
+  19 udp1472      239.71 Mbps  jitter=0.062ms loss=75.90%  cpu=99.1%
+  20 tcp1         198.74 Mbps  retr=115  cpu=94.8%
+  20 tcp4         207.99 Mbps  retr=682  cpu=96.2%
+  20 tcp1_mss     202.73 Mbps  retr=114  cpu=92.9%
+  20 udp64         49.50 Mbps  jitter=0.026ms loss=50.46%  cpu=99.1%
+  20 udp512       144.34 Mbps  jitter=0.036ms loss=70.83%  cpu=99.0%
+  20 udp1200      206.44 Mbps  jitter=0.077ms loss=78.94%  cpu=99.1%
+  20 udp1472      205.54 Mbps  jitter=0.093ms loss=78.95%  cpu=99.3%
+  21 tcp1         194.54 Mbps  retr=111  cpu=91.8%
+  21 tcp4         199.16 Mbps  retr=764  cpu=95.0%
+  21 tcp1_mss     194.97 Mbps  retr=104  cpu=90.1%
+  21 udp64         42.81 Mbps  jitter=0.034ms loss=57.12%  cpu=99.1%
+  21 udp512       140.47 Mbps  jitter=0.027ms loss=71.67%  cpu=99.2%
+  21 udp1200      198.88 Mbps  jitter=0.060ms loss=79.28%  cpu=95.8%
+  21 udp1472      199.15 Mbps  jitter=0.105ms loss=79.46%  cpu=99.1%
+  22 tcp1         204.86 Mbps  retr=229  cpu=91.0%
+  22 tcp4         208.80 Mbps  retr=647  cpu=95.7%
+  22 tcp1_mss     196.11 Mbps  retr=72  cpu=91.6%
+  22 udp64         41.43 Mbps  jitter=0.023ms loss=58.53%  cpu=99.1%
+  22 udp512       137.16 Mbps  jitter=0.044ms loss=72.48%  cpu=98.9%
+  22 udp1200      199.28 Mbps  jitter=0.058ms loss=79.99%  cpu=99.2%
+  22 udp1472      226.05 Mbps  jitter=0.073ms loss=76.93%  cpu=99.4%
+  23 tcp1         201.67 Mbps  retr=157  cpu=89.6%
+  23 tcp4         191.40 Mbps  retr=921  cpu=91.8%
+  23 tcp1_mss     196.26 Mbps  retr=65  cpu=91.5%
+  23 udp64         43.53 Mbps  jitter=0.013ms loss=54.65%  cpu=95.4%
+  23 udp512       138.12 Mbps  jitter=0.040ms loss=72.14%  cpu=95.3%
+  23 udp1200      191.90 Mbps  jitter=0.090ms loss=80.25%  cpu=98.9%
+  23 udp1472      231.25 Mbps  jitter=0.066ms loss=76.39%  cpu=99.2%
+  24 tcp1         200.73 Mbps  retr=110  cpu=90.5%
+  24 tcp4         212.07 Mbps  retr=584  cpu=97.3%
+  24 tcp1_mss     212.79 Mbps  retr=61  cpu=91.5%
+  24 udp64         39.45 Mbps  jitter=0.018ms loss=60.45%  cpu=98.6%
+  24 udp512       152.42 Mbps  jitter=0.030ms loss=69.26%  cpu=98.9%
+  24 udp1200      207.98 Mbps  jitter=0.060ms loss=78.78%  cpu=99.2%
+  24 udp1472      216.66 Mbps  jitter=0.080ms loss=77.74%  cpu=99.3%
+  25 tcp1         203.04 Mbps  retr=139  cpu=91.7%
+  25 tcp4         215.60 Mbps  retr=737  cpu=97.3%
+  25 tcp1_mss     197.49 Mbps  retr=68  cpu=91.9%
+  25 udp64         41.01 Mbps  jitter=0.012ms loss=57.29%  cpu=95.5%
+  25 udp512       143.98 Mbps  jitter=0.042ms loss=70.89%  cpu=99.1%
+  25 udp1200      197.02 Mbps  jitter=0.070ms loss=79.82%  cpu=99.1%
+  25 udp1472      221.20 Mbps  jitter=0.062ms loss=77.76%  cpu=99.2%
+  26 tcp1         202.49 Mbps  retr=189  cpu=89.5%
+  26 tcp4         198.13 Mbps  retr=767  cpu=95.5%
+  26 tcp1_mss     196.86 Mbps  retr=199  cpu=88.4%
+  26 udp64         54.31 Mbps  jitter=0.014ms loss=43.42%  cpu=95.4%
+  26 udp512       155.27 Mbps  jitter=0.038ms loss=68.86%  cpu=99.1%
+  26 udp1200      205.47 Mbps  jitter=0.064ms loss=78.59%  cpu=95.6%
+  26 udp1472      201.82 Mbps  jitter=0.094ms loss=79.30%  cpu=99.2%
+  27 tcp1         193.08 Mbps  retr=247  cpu=92.0%
+  27 tcp4         211.32 Mbps  retr=646  cpu=97.0%
+  27 tcp1_mss     199.58 Mbps  retr=137  cpu=90.9%
+  27 udp64         36.41 Mbps  jitter=0.014ms loss=63.47%  cpu=99.2%
+  27 udp512       147.90 Mbps  jitter=0.030ms loss=70.22%  cpu=98.9%
+  27 udp1200      188.28 Mbps  jitter=0.044ms loss=80.38%  cpu=95.6%
+  27 udp1472      200.90 Mbps  jitter=0.078ms loss=79.39%  cpu=99.1%
+  28 tcp1         197.28 Mbps  retr=165  cpu=91.8%
+  28 tcp4         206.69 Mbps  retr=747  cpu=97.0%
+  28 tcp1_mss     199.24 Mbps  retr=61  cpu=89.1%
+  28 udp64         41.16 Mbps  jitter=0.018ms loss=58.71%  cpu=98.8%
+  28 udp512       136.40 Mbps  jitter=0.047ms loss=72.47%  cpu=95.3%
+  28 udp1200      189.08 Mbps  jitter=0.059ms loss=80.30%  cpu=95.7%
+  28 udp1472      207.64 Mbps  jitter=0.071ms loss=79.12%  cpu=99.1%
+  29 tcp1         188.47 Mbps  retr=94  cpu=84.1%
+  29 tcp4         210.55 Mbps  retr=568  cpu=96.7%
+  29 tcp1_mss     204.70 Mbps  retr=85  cpu=92.8%
+  29 udp64         50.91 Mbps  jitter=0.014ms loss=49.01%  cpu=99.1%
+  29 udp512       138.12 Mbps  jitter=0.045ms loss=72.14%  cpu=99.3%
+  29 udp1200      193.37 Mbps  jitter=0.074ms loss=80.02%  cpu=99.1%
+  29 udp1472      222.40 Mbps  jitter=0.058ms loss=76.83%  cpu=95.8%
+
+[cleanup] ...
+
+raw results: /home/admin/projects/algo/bench/cmp_sdex.jsonl
+===== 23:27:44 finished sdex (rc=0) =====
+===== 23:27:44 starting wireguard =====
+=== three-way tunnel benchmark [cmp] vpn=wireguard ===
+    iterations 30 (warm-up 3), 5s each
+    scenarios  tcp1, tcp4, tcp1_mss, udp64, udp512, udp1200, udp1472
+    results    /home/admin/projects/algo/bench/cmp_wireguard.jsonl
+
+server default route: default via 192.168.76.1 dev eth2 
+
+[tunnel:wireguard] bringing it up ...
+      tunnel up: sdexbench (egress eth2)
+      3 packets transmitted, 3 received, 0% packet loss, time 2048ms
+      MTU: client mtu 1420, server mtu 1420
+
+[latency] ping -c 100
+      100 packets transmitted, 100 received, 0% packet loss, time 2288ms
+      rtt min/avg/max/mdev = 0.447/0.777/1.712/0.262 ms
+
+[tunnel:wireguard] throughput scenarios
+   0 tcp1        4002.63 Mbps  retr=206
+   0 tcp4        4014.48 Mbps  retr=977
+   0 tcp1_mss    4252.44 Mbps  retr=1059
+   0 udp64         99.46 Mbps  jitter=0.017ms loss=0.52%
+   0 udp512       499.88 Mbps  jitter=0.004ms loss=0.01%
+   0 udp1200      999.77 Mbps  jitter=0.006ms loss=0.01%
+   0 udp1472      999.87 Mbps  jitter=0.014ms loss=0.00%
+   1 tcp1        4169.75 Mbps  retr=170
+   1 tcp4        4073.84 Mbps  retr=1543
+   1 tcp1_mss    4082.81 Mbps  retr=382
+   1 udp64         99.76 Mbps  jitter=0.005ms loss=0.23%
+   1 udp512       499.95 Mbps  jitter=0.007ms loss=0.00%
+   1 udp1200      999.84 Mbps  jitter=0.007ms loss=0.00%
+   1 udp1472      999.88 Mbps  jitter=0.009ms loss=0.00%
+   2 tcp1        4135.64 Mbps  retr=230
+   2 tcp4        4018.93 Mbps  retr=1202
+   2 tcp1_mss    4172.50 Mbps  retr=343
+   2 udp64         99.25 Mbps  jitter=0.016ms loss=0.74%
+   2 udp512       499.92 Mbps  jitter=0.005ms loss=0.01%
+   2 udp1200      999.89 Mbps  jitter=0.022ms loss=0.00%
+   2 udp1472      998.98 Mbps  jitter=0.012ms loss=0.09%
+   3 tcp1        4265.78 Mbps  retr=342
+   3 tcp4        4186.17 Mbps  retr=1391
+   3 tcp1_mss    4123.94 Mbps  retr=486
+   3 udp64         99.73 Mbps  jitter=0.005ms loss=0.26%
+   3 udp512       499.93 Mbps  jitter=0.005ms loss=0.00%
+   3 udp1200      999.78 Mbps  jitter=0.006ms loss=0.01%
+   3 udp1472      999.55 Mbps  jitter=0.024ms loss=0.03%
+   4 tcp1        3959.00 Mbps  retr=201
+   4 tcp4        4033.00 Mbps  retr=1184
+   4 tcp1_mss    4121.52 Mbps  retr=104
+   4 udp64         99.56 Mbps  jitter=0.014ms loss=0.41%
+   4 udp512       499.88 Mbps  jitter=0.007ms loss=0.01%
+   4 udp1200      999.88 Mbps  jitter=0.005ms loss=0.00%
+   4 udp1472      999.82 Mbps  jitter=0.039ms loss=0.00%
+   5 tcp1        4144.63 Mbps  retr=253
+   5 tcp4        4093.32 Mbps  retr=1061
+   5 tcp1_mss    4103.80 Mbps  retr=230
+   5 udp64         99.83 Mbps  jitter=0.007ms loss=0.15%
+   5 udp512       499.93 Mbps  jitter=0.008ms loss=0.00%
+   5 udp1200      999.88 Mbps  jitter=0.015ms loss=0.00%
+   5 udp1472      999.71 Mbps  jitter=0.008ms loss=0.01%
+   6 tcp1        4198.65 Mbps  retr=324
+   6 tcp4        4051.81 Mbps  retr=1250
+   6 tcp1_mss    4056.72 Mbps  retr=361
+   6 udp64         99.68 Mbps  jitter=0.020ms loss=0.31%
+   6 udp512       499.88 Mbps  jitter=0.023ms loss=0.01%
+   6 udp1200      999.67 Mbps  jitter=0.017ms loss=0.02%
+   6 udp1472      999.78 Mbps  jitter=0.018ms loss=0.01%
+   7 tcp1        4145.51 Mbps  retr=121
+   7 tcp4        4155.78 Mbps  retr=1347
+   7 tcp1_mss    3924.62 Mbps  retr=317
+   7 udp64         99.90 Mbps  jitter=0.023ms loss=0.08%
+   7 udp512       499.71 Mbps  jitter=0.022ms loss=0.04%
+   7 udp1200      999.84 Mbps  jitter=0.034ms loss=0.00%
+   7 udp1472      999.26 Mbps  jitter=0.022ms loss=0.06%
+   8 tcp1        3972.24 Mbps  retr=149
+   8 tcp4        4155.85 Mbps  retr=1078
+   8 tcp1_mss    4156.48 Mbps  retr=228
+   8 udp64         99.80 Mbps  jitter=0.006ms loss=0.19%
+   8 udp512       499.85 Mbps  jitter=0.006ms loss=0.02%
+   8 udp1200      999.86 Mbps  jitter=0.026ms loss=0.00%
+   8 udp1472      999.58 Mbps  jitter=0.032ms loss=0.03%
+   9 tcp1        4027.11 Mbps  retr=198
+   9 tcp4        3907.32 Mbps  retr=1497
+   9 tcp1_mss    4032.95 Mbps  retr=392
+   9 udp64         99.87 Mbps  jitter=0.018ms loss=0.11%
+   9 udp512       499.94 Mbps  jitter=0.016ms loss=0.00%
+   9 udp1200      999.88 Mbps  jitter=0.017ms loss=0.00%
+   9 udp1472      998.90 Mbps  jitter=0.009ms loss=0.10%
+  10 tcp1        4080.41 Mbps  retr=97
+  10 tcp4        4191.37 Mbps  retr=1349
+  10 tcp1_mss    4205.92 Mbps  retr=171
+  10 udp64         99.64 Mbps  jitter=0.004ms loss=0.34%
+  10 udp512       499.94 Mbps  jitter=0.015ms loss=0.00%
+  10 udp1200      999.84 Mbps  jitter=0.006ms loss=0.00%
+  10 udp1472      999.21 Mbps  jitter=0.016ms loss=0.07%
+  11 tcp1        4181.51 Mbps  retr=145
+  11 tcp4        3924.84 Mbps  retr=1482
+  11 tcp1_mss    4167.29 Mbps  retr=181
+  11 udp64         99.86 Mbps  jitter=0.031ms loss=0.12%
+  11 udp512       499.94 Mbps  jitter=0.005ms loss=0.00%
+  11 udp1200      999.89 Mbps  jitter=0.015ms loss=0.00%
+  11 udp1472      999.75 Mbps  jitter=0.016ms loss=0.02%
+  12 tcp1        4190.98 Mbps  retr=561
+  12 tcp4        4195.02 Mbps  retr=1226
+  12 tcp1_mss    4175.78 Mbps  retr=235
+  12 udp64         99.74 Mbps  jitter=0.008ms loss=0.25%
+  12 udp512       499.93 Mbps  jitter=0.003ms loss=0.00%
+  12 udp1200      999.71 Mbps  jitter=0.006ms loss=0.02%
+  12 udp1472      998.69 Mbps  jitter=0.012ms loss=0.12%
+  13 tcp1        4247.79 Mbps  retr=201
+  13 tcp4        4181.28 Mbps  retr=1190
+  13 tcp1_mss    4068.67 Mbps  retr=267
+  13 udp64         99.81 Mbps  jitter=0.002ms loss=0.18%
+  13 udp512       499.94 Mbps  jitter=0.006ms loss=0.00%
+  13 udp1200      999.85 Mbps  jitter=0.031ms loss=0.00%
+  13 udp1472      999.84 Mbps  jitter=0.023ms loss=0.00%
+  14 tcp1        4073.95 Mbps  retr=48
+  14 tcp4        4181.05 Mbps  retr=1201
+  14 tcp1_mss    4155.89 Mbps  retr=254
+  14 udp64         99.69 Mbps  jitter=0.020ms loss=0.30%
+  14 udp512       499.91 Mbps  jitter=0.013ms loss=0.00%
+  14 udp1200      999.87 Mbps  jitter=0.010ms loss=0.00%
+  14 udp1472      999.38 Mbps  jitter=0.009ms loss=0.05%
+  15 tcp1        4308.09 Mbps  retr=232
+  15 tcp4        4221.01 Mbps  retr=1152
+  15 tcp1_mss    3996.84 Mbps  retr=372
+  15 udp64         99.77 Mbps  jitter=0.005ms loss=0.22%
+  15 udp512       499.93 Mbps  jitter=0.013ms loss=0.00%
+  15 udp1200      999.83 Mbps  jitter=0.013ms loss=0.01%
+  15 udp1472      999.63 Mbps  jitter=0.014ms loss=0.02%
+  16 tcp1        4184.51 Mbps  retr=551
+  16 tcp4        4189.92 Mbps  retr=1233
+  16 tcp1_mss    4393.20 Mbps  retr=197
+  16 udp64         99.78 Mbps  jitter=0.008ms loss=0.21%
+  16 udp512       499.92 Mbps  jitter=0.006ms loss=0.00%
+  16 udp1200      999.90 Mbps  jitter=0.008ms loss=0.00%
+  16 udp1472      999.73 Mbps  jitter=0.010ms loss=0.02%
+  17 tcp1        4088.88 Mbps  retr=446
+  17 tcp4        4232.57 Mbps  retr=1260
+  17 tcp1_mss    4132.46 Mbps  retr=317
+  17 udp64         99.44 Mbps  jitter=0.019ms loss=0.54%
+  17 udp512       499.68 Mbps  jitter=0.030ms loss=0.01%
+  17 udp1200      999.78 Mbps  jitter=0.006ms loss=0.01%
+  17 udp1472      999.28 Mbps  jitter=0.007ms loss=0.06%
+  18 tcp1        4266.14 Mbps  retr=234
+  18 tcp4        4089.38 Mbps  retr=1564
+  18 tcp1_mss    3980.83 Mbps  retr=375
+  18 udp64         99.94 Mbps  jitter=0.023ms loss=0.04%
+  18 udp512       499.93 Mbps  jitter=0.010ms loss=0.00%
+  18 udp1200      999.73 Mbps  jitter=0.016ms loss=0.01%
+  18 udp1472      999.13 Mbps  jitter=0.011ms loss=0.07%
+  19 tcp1        4075.52 Mbps  retr=182
+  19 tcp4        4129.95 Mbps  retr=837
+  19 tcp1_mss    3843.54 Mbps  retr=68
+  19 udp64         99.95 Mbps  jitter=0.005ms loss=0.04%
+  19 udp512       499.88 Mbps  jitter=0.008ms loss=0.01%
+  19 udp1200      999.88 Mbps  jitter=0.024ms loss=0.00%
+  19 udp1472      998.46 Mbps  jitter=0.022ms loss=0.14%
+  20 tcp1        4125.03 Mbps  retr=71
+  20 tcp4        4109.29 Mbps  retr=1385
+  20 tcp1_mss    4251.54 Mbps  retr=227
+  20 udp64         99.49 Mbps  jitter=0.009ms loss=0.49%
+  20 udp512       499.95 Mbps  jitter=0.007ms loss=0.00%
+  20 udp1200      999.80 Mbps  jitter=0.016ms loss=0.00%
+  20 udp1472      999.59 Mbps  jitter=0.025ms loss=0.03%
+  21 tcp1        4021.64 Mbps  retr=274
+  21 tcp4        4148.09 Mbps  retr=926
+  21 tcp1_mss    3825.56 Mbps  retr=319
+  21 udp64         99.80 Mbps  jitter=0.014ms loss=0.19%
+  21 udp512       499.95 Mbps  jitter=0.016ms loss=0.00%
+  21 udp1200      999.85 Mbps  jitter=0.006ms loss=0.01%
+  21 udp1472      999.67 Mbps  jitter=0.011ms loss=0.01%
+  22 tcp1        4128.01 Mbps  retr=282
+  22 tcp4        4165.36 Mbps  retr=1618
+  22 tcp1_mss    4284.38 Mbps  retr=137
+  22 udp64         99.93 Mbps  jitter=0.008ms loss=0.03%
+  22 udp512       499.94 Mbps  jitter=0.017ms loss=0.00%
+  22 udp1200      999.85 Mbps  jitter=0.013ms loss=0.00%
+  22 udp1472      999.61 Mbps  jitter=0.010ms loss=0.03%
+  23 tcp1        4096.42 Mbps  retr=343
+  23 tcp4        4002.15 Mbps  retr=1221
+  23 tcp1_mss    4139.56 Mbps  retr=464
+  23 udp64         99.92 Mbps  jitter=0.003ms loss=0.07%
+  23 udp512       499.91 Mbps  jitter=0.007ms loss=0.00%
+  23 udp1200      999.86 Mbps  jitter=0.011ms loss=0.00%
+  23 udp1472      999.76 Mbps  jitter=0.032ms loss=0.01%
+  24 tcp1        4176.89 Mbps  retr=272
+  24 tcp4        4166.11 Mbps  retr=1030
+  24 tcp1_mss    3990.64 Mbps  retr=46
+  24 udp64         99.80 Mbps  jitter=0.003ms loss=0.18%
+  24 udp512       499.89 Mbps  jitter=0.007ms loss=0.01%
+  24 udp1200      998.62 Mbps  jitter=0.009ms loss=0.12%
+  24 udp1472      999.46 Mbps  jitter=0.011ms loss=0.04%
+  25 tcp1        4148.81 Mbps  retr=324
+  25 tcp4        4115.76 Mbps  retr=1462
+  25 tcp1_mss    3968.63 Mbps  retr=198
+  25 udp64         99.73 Mbps  jitter=0.006ms loss=0.26%
+  25 udp512       499.95 Mbps  jitter=0.018ms loss=0.00%
+  25 udp1200      999.85 Mbps  jitter=0.036ms loss=0.00%
+  25 udp1472      999.81 Mbps  jitter=0.012ms loss=0.00%
+  26 tcp1        3912.56 Mbps  retr=602
+  26 tcp4        4068.46 Mbps  retr=1131
+  26 tcp1_mss    4089.60 Mbps  retr=627
+  26 udp64         99.60 Mbps  jitter=0.002ms loss=0.38%
+  26 udp512       499.90 Mbps  jitter=0.006ms loss=0.01%
+  26 udp1200      999.87 Mbps  jitter=0.006ms loss=0.00%
+  26 udp1472      999.55 Mbps  jitter=0.036ms loss=0.02%
+  27 tcp1        4185.14 Mbps  retr=448
+  27 tcp4        4224.74 Mbps  retr=1301
+  27 tcp1_mss    4183.25 Mbps  retr=345
+  27 udp64         99.72 Mbps  jitter=0.017ms loss=0.17%
+  27 udp512       499.43 Mbps  jitter=0.023ms loss=0.10%
+  27 udp1200      999.78 Mbps  jitter=0.026ms loss=0.01%
+  27 udp1472      999.00 Mbps  jitter=0.011ms loss=0.09%
+  28 tcp1        4137.22 Mbps  retr=349
+  28 tcp4        4031.16 Mbps  retr=1283
+  28 tcp1_mss    4101.04 Mbps  retr=228
+  28 udp64         99.84 Mbps  jitter=0.011ms loss=0.14%
+  28 udp512       499.95 Mbps  jitter=0.006ms loss=0.00%
+  28 udp1200      999.75 Mbps  jitter=0.007ms loss=0.01%
+  28 udp1472      999.50 Mbps  jitter=0.009ms loss=0.04%
+  29 tcp1        4261.81 Mbps  retr=631
+  29 tcp4        4181.80 Mbps  retr=1047
+  29 tcp1_mss    4156.26 Mbps  retr=117
+  29 udp64         99.84 Mbps  jitter=0.005ms loss=0.14%
+  29 udp512       499.64 Mbps  jitter=0.011ms loss=0.06%
+  29 udp1200      999.80 Mbps  jitter=0.036ms loss=0.00%
+  29 udp1472      999.79 Mbps  jitter=0.031ms loss=0.01%
+
+[cleanup] ...
+
+raw results: /home/admin/projects/algo/bench/cmp_wireguard.jsonl
+===== 23:46:11 finished wireguard (rc=0) =====
+===== 23:46:11 starting openvpn =====
+=== three-way tunnel benchmark [cmp] vpn=openvpn ===
+    iterations 30 (warm-up 3), 5s each
+    scenarios  tcp1, tcp4, tcp1_mss, udp64, udp512, udp1200, udp1472
+    results    /home/admin/projects/algo/bench/cmp_openvpn.jsonl
+
+server default route: default via 192.168.76.1 dev eth2 
+
+[tunnel:openvpn] bringing it up ...
+      tunnel up: tun10 (egress eth2)
+      3 packets transmitted, 3 received, 0% packet loss, time 2009ms
+      MTU: client mtu 1500, server mtu 1500
+
+[latency] ping -c 100
+      100 packets transmitted, 100 received, 0% packet loss, time 2248ms
+      rtt min/avg/max/mdev = 0.553/0.889/1.925/0.233 ms
+
+[tunnel:openvpn] throughput scenarios
+   0 tcp1         680.89 Mbps  retr=606  cpu=61.0%
+   0 tcp4         712.30 Mbps  retr=4905  cpu=66.3%
+   0 tcp1_mss     707.70 Mbps  retr=680  cpu=65.8%
+   0 udp64         54.46 Mbps  jitter=0.011ms loss=45.50%  cpu=98.9%
+   0 udp512       420.33 Mbps  jitter=0.012ms loss=15.90%  cpu=98.0%
+   0 udp1200      943.18 Mbps  jitter=0.023ms loss=5.67%  cpu=90.6%
+   0 udp1472      996.21 Mbps  jitter=0.013ms loss=0.36%  cpu=85.4%
+   1 tcp1         790.36 Mbps  retr=763  cpu=70.6%
+   1 tcp4         847.20 Mbps  retr=4439  cpu=76.9%
+   1 tcp1_mss     790.87 Mbps  retr=485  cpu=69.9%
+   1 udp64         51.49 Mbps  jitter=0.009ms loss=46.37%  cpu=95.3%
+   1 udp512       439.25 Mbps  jitter=0.012ms loss=12.05%  cpu=97.9%
+   1 udp1200      881.63 Mbps  jitter=0.017ms loss=11.74%  cpu=97.7%
+   1 udp1472      997.13 Mbps  jitter=0.011ms loss=0.28%  cpu=86.3%
+   2 tcp1         770.63 Mbps  retr=809  cpu=68.8%
+   2 tcp4         765.18 Mbps  retr=4552  cpu=70.9%
+   2 tcp1_mss     815.88 Mbps  retr=479  cpu=73.1%
+   2 udp64         56.20 Mbps  jitter=0.019ms loss=43.76%  cpu=98.9%
+   2 udp512       439.89 Mbps  jitter=0.016ms loss=12.00%  cpu=97.9%
+   2 udp1200      872.54 Mbps  jitter=0.013ms loss=12.73%  cpu=89.5%
+   2 udp1472      998.97 Mbps  jitter=0.016ms loss=0.09%  cpu=87.9%
+   3 tcp1         796.48 Mbps  retr=854  cpu=69.0%
+   3 tcp4         789.01 Mbps  retr=4765  cpu=72.7%
+   3 tcp1_mss     754.91 Mbps  retr=730  cpu=68.6%
+   3 udp64         58.23 Mbps  jitter=0.011ms loss=41.71%  cpu=98.9%
+   3 udp512       427.14 Mbps  jitter=0.011ms loss=14.53%  cpu=97.4%
+   3 udp1200      904.12 Mbps  jitter=0.016ms loss=5.82%  cpu=90.1%
+   3 udp1472      995.50 Mbps  jitter=0.012ms loss=0.43%  cpu=85.1%
+   4 tcp1         797.45 Mbps  retr=689  cpu=71.9%
+   4 tcp4         788.56 Mbps  retr=4768  cpu=76.5%
+   4 tcp1_mss     763.28 Mbps  retr=978  cpu=68.6%
+   4 udp64         53.61 Mbps  jitter=0.009ms loss=46.34%  cpu=99.0%
+   4 udp512       469.87 Mbps  jitter=0.010ms loss=6.01%  cpu=97.7%
+   4 udp1200      932.78 Mbps  jitter=0.016ms loss=6.71%  cpu=91.7%
+   4 udp1472      997.43 Mbps  jitter=0.016ms loss=0.24%  cpu=86.8%
+   5 tcp1         798.71 Mbps  retr=961  cpu=72.0%
+   5 tcp4         816.21 Mbps  retr=4760  cpu=75.7%
+   5 tcp1_mss     744.22 Mbps  retr=898  cpu=68.0%
+   5 udp64         59.83 Mbps  jitter=0.011ms loss=40.12%  cpu=98.3%
+   5 udp512       418.99 Mbps  jitter=0.011ms loss=16.18%  cpu=97.6%
+   5 udp1200      930.21 Mbps  jitter=0.017ms loss=6.97%  cpu=96.2%
+   5 udp1472      989.83 Mbps  jitter=0.011ms loss=1.01%  cpu=86.9%
+   6 tcp1         771.17 Mbps  retr=1202  cpu=71.0%
+   6 tcp4         779.53 Mbps  retr=4493  cpu=72.4%
+   6 tcp1_mss     749.90 Mbps  retr=568  cpu=68.0%
+   6 udp64         58.15 Mbps  jitter=0.010ms loss=41.80%  cpu=99.1%
+   6 udp512       432.41 Mbps  jitter=0.014ms loss=13.50%  cpu=96.6%
+   6 udp1200      913.83 Mbps  jitter=0.013ms loss=8.61%  cpu=93.2%
+   6 udp1472      996.79 Mbps  jitter=0.017ms loss=0.31%  cpu=85.7%
+   7 tcp1         723.17 Mbps  retr=835  cpu=66.3%
+   7 tcp4         714.82 Mbps  retr=4447  cpu=71.3%
+   7 tcp1_mss     770.67 Mbps  retr=617  cpu=70.9%
+   7 udp64         59.08 Mbps  jitter=0.011ms loss=40.86%  cpu=99.1%
+   7 udp512       433.26 Mbps  jitter=0.018ms loss=13.26%  cpu=98.0%
+   7 udp1200      918.09 Mbps  jitter=0.028ms loss=8.18%  cpu=92.5%
+   7 udp1472      998.49 Mbps  jitter=0.020ms loss=0.14%  cpu=86.5%
+   8 tcp1         780.05 Mbps  retr=543  cpu=69.8%
+   8 tcp4         760.09 Mbps  retr=4725  cpu=73.1%
+   8 tcp1_mss     758.12 Mbps  retr=862  cpu=70.0%
+   8 udp64         54.43 Mbps  jitter=0.010ms loss=45.53%  cpu=98.8%
+   8 udp512       439.59 Mbps  jitter=0.010ms loss=12.03%  cpu=97.5%
+   8 udp1200      874.40 Mbps  jitter=0.012ms loss=12.54%  cpu=90.0%
+   8 udp1472      998.85 Mbps  jitter=0.010ms loss=0.11%  cpu=86.9%
+   9 tcp1         760.17 Mbps  retr=858  cpu=67.6%
+   9 tcp4         765.55 Mbps  retr=4694  cpu=73.9%
+   9 tcp1_mss     785.88 Mbps  retr=939  cpu=71.0%
+   9 udp64         56.99 Mbps  jitter=0.009ms loss=40.63%  cpu=95.2%
+   9 udp512       426.31 Mbps  jitter=0.010ms loss=14.64%  cpu=98.0%
+   9 udp1200      933.81 Mbps  jitter=0.011ms loss=6.61%  cpu=97.6%
+   9 udp1472      999.44 Mbps  jitter=0.016ms loss=0.04%  cpu=85.6%
+  10 tcp1         780.28 Mbps  retr=985  cpu=68.0%
+  10 tcp4         797.49 Mbps  retr=4861  cpu=73.0%
+  10 tcp1_mss     760.93 Mbps  retr=639  cpu=71.8%
+  10 udp64         58.78 Mbps  jitter=0.019ms loss=41.17%  cpu=98.7%
+  10 udp512       441.12 Mbps  jitter=0.011ms loss=11.76%  cpu=96.4%
+  10 udp1200      890.91 Mbps  jitter=0.015ms loss=10.87%  cpu=91.6%
+  10 udp1472      998.97 Mbps  jitter=0.017ms loss=0.09%  cpu=87.4%
+  11 tcp1         798.79 Mbps  retr=752  cpu=70.6%
+  11 tcp4         815.30 Mbps  retr=3673  cpu=78.8%
+  11 tcp1_mss     782.34 Mbps  retr=609  cpu=75.4%
+  11 udp64         50.74 Mbps  jitter=0.010ms loss=47.14%  cpu=94.7%
+  11 udp512       451.73 Mbps  jitter=0.008ms loss=9.64%  cpu=97.1%
+  11 udp1200      930.65 Mbps  jitter=0.009ms loss=6.92%  cpu=96.2%
+  11 udp1472      999.53 Mbps  jitter=0.015ms loss=0.03%  cpu=88.5%
+  12 tcp1         785.33 Mbps  retr=800  cpu=70.4%
+  12 tcp4         800.61 Mbps  retr=4614  cpu=75.7%
+  12 tcp1_mss     772.67 Mbps  retr=616  cpu=69.0%
+  12 udp64         57.15 Mbps  jitter=0.010ms loss=40.46%  cpu=95.0%
+  12 udp512       417.32 Mbps  jitter=0.015ms loss=16.48%  cpu=98.4%
+  12 udp1200      908.78 Mbps  jitter=0.008ms loss=9.08%  cpu=94.8%
+  12 udp1472      996.05 Mbps  jitter=0.015ms loss=0.38%  cpu=85.3%
+  13 tcp1         812.10 Mbps  retr=649  cpu=72.9%
+  13 tcp4         791.17 Mbps  retr=4833  cpu=74.9%
+  13 tcp1_mss     758.25 Mbps  retr=709  cpu=70.8%
+  13 udp64         56.01 Mbps  jitter=0.011ms loss=43.93%  cpu=99.1%
+  13 udp512       431.74 Mbps  jitter=0.011ms loss=13.61%  cpu=97.7%
+  13 udp1200      919.44 Mbps  jitter=0.008ms loss=7.99%  cpu=94.6%
+  13 udp1472      999.43 Mbps  jitter=0.033ms loss=0.04%  cpu=85.3%
+  14 tcp1         798.41 Mbps  retr=654  cpu=72.2%
+  14 tcp4         822.70 Mbps  retr=4302  cpu=74.8%
+  14 tcp1_mss     725.46 Mbps  retr=1257  cpu=67.8%
+  14 udp64         56.96 Mbps  jitter=0.011ms loss=40.66%  cpu=95.0%
+  14 udp512       436.41 Mbps  jitter=0.013ms loss=12.68%  cpu=97.8%
+  14 udp1200      891.83 Mbps  jitter=0.011ms loss=10.80%  cpu=91.6%
+  14 udp1472      997.66 Mbps  jitter=0.010ms loss=0.23%  cpu=85.7%
+  15 tcp1         802.52 Mbps  retr=757  cpu=69.2%
+  15 tcp4         813.17 Mbps  retr=4437  cpu=74.8%
+  15 tcp1_mss     755.35 Mbps  retr=863  cpu=70.6%
+  15 udp64         58.06 Mbps  jitter=0.008ms loss=41.89%  cpu=98.9%
+  15 udp512       424.34 Mbps  jitter=0.011ms loss=15.04%  cpu=97.7%
+  15 udp1200      924.84 Mbps  jitter=0.017ms loss=7.42%  cpu=94.5%
+  15 udp1472      998.05 Mbps  jitter=0.015ms loss=0.18%  cpu=83.3%
+  16 tcp1         774.49 Mbps  retr=618  cpu=70.4%
+  16 tcp4         803.63 Mbps  retr=4524  cpu=74.9%
+  16 tcp1_mss     760.54 Mbps  retr=733  cpu=69.5%
+  16 udp64         52.29 Mbps  jitter=0.021ms loss=47.65%  cpu=98.7%
+  16 udp512       442.29 Mbps  jitter=0.012ms loss=11.45%  cpu=97.3%
+  16 udp1200      945.29 Mbps  jitter=0.014ms loss=5.46%  cpu=95.6%
+  16 udp1472      995.70 Mbps  jitter=0.012ms loss=0.42%  cpu=83.8%
+  17 tcp1         782.41 Mbps  retr=964  cpu=67.6%
+  17 tcp4         779.45 Mbps  retr=4993  cpu=73.3%
+  17 tcp1_mss     770.71 Mbps  retr=808  cpu=71.0%
+  17 udp64         63.24 Mbps  jitter=0.008ms loss=36.69%  cpu=99.2%
+  17 udp512       403.95 Mbps  jitter=0.007ms loss=15.83%  cpu=94.0%
+  17 udp1200      899.30 Mbps  jitter=0.026ms loss=10.06%  cpu=96.0%
+  17 udp1472      997.89 Mbps  jitter=0.011ms loss=0.20%  cpu=86.7%
+  18 tcp1         785.73 Mbps  retr=706  cpu=71.2%
+  18 tcp4         786.76 Mbps  retr=5034  cpu=74.9%
+  18 tcp1_mss     793.79 Mbps  retr=594  cpu=73.4%
+  18 udp64         52.83 Mbps  jitter=0.007ms loss=47.13%  cpu=98.9%
+  18 udp512       423.74 Mbps  jitter=0.014ms loss=11.71%  cpu=94.3%
+  18 udp1200      917.87 Mbps  jitter=0.014ms loss=8.12%  cpu=96.8%
+  18 udp1472      997.40 Mbps  jitter=0.013ms loss=0.25%  cpu=86.4%
+  19 tcp1         803.04 Mbps  retr=630  cpu=73.0%
+  19 tcp4         796.80 Mbps  retr=4639  cpu=73.1%
+  19 tcp1_mss     778.77 Mbps  retr=665  cpu=70.2%
+  19 udp64         57.79 Mbps  jitter=0.013ms loss=42.15%  cpu=99.1%
+  19 udp512       388.09 Mbps  jitter=0.015ms loss=22.34%  cpu=97.6%
+  19 udp1200      899.76 Mbps  jitter=0.013ms loss=9.93%  cpu=97.1%
+  19 udp1472      998.32 Mbps  jitter=0.016ms loss=0.15%  cpu=83.9%
+  20 tcp1         819.38 Mbps  retr=806  cpu=71.6%
+  20 tcp4         786.40 Mbps  retr=5062  cpu=73.9%
+  20 tcp1_mss     759.71 Mbps  retr=865  cpu=69.6%
+  20 udp64         54.71 Mbps  jitter=0.006ms loss=43.00%  cpu=95.4%
+  20 udp512       437.67 Mbps  jitter=0.014ms loss=12.44%  cpu=98.2%
+  20 udp1200      951.57 Mbps  jitter=0.015ms loss=4.82%  cpu=97.9%
+  20 udp1472      996.97 Mbps  jitter=0.019ms loss=0.29%  cpu=85.4%
+  21 tcp1         761.78 Mbps  retr=770  cpu=69.0%
+  21 tcp4         788.22 Mbps  retr=4705  cpu=73.9%
+  21 tcp1_mss     804.01 Mbps  retr=699  cpu=71.1%
+  21 udp64         57.28 Mbps  jitter=0.008ms loss=42.67%  cpu=99.1%
+  21 udp512       441.25 Mbps  jitter=0.009ms loss=11.67%  cpu=97.6%
+  21 udp1200      935.39 Mbps  jitter=0.011ms loss=6.43%  cpu=89.2%
+  21 udp1472      996.17 Mbps  jitter=0.018ms loss=0.37%  cpu=86.3%
+  22 tcp1         759.75 Mbps  retr=1095  cpu=67.8%
+  22 tcp4         769.98 Mbps  retr=4974  cpu=73.2%
+  22 tcp1_mss     762.39 Mbps  retr=719  cpu=70.6%
+  22 udp64         53.48 Mbps  jitter=0.016ms loss=46.46%  cpu=96.9%
+  22 udp512       415.22 Mbps  jitter=0.018ms loss=16.86%  cpu=97.7%
+  22 udp1200      912.99 Mbps  jitter=0.012ms loss=8.69%  cpu=92.6%
+  22 udp1472      997.07 Mbps  jitter=0.008ms loss=0.28%  cpu=83.9%
+  23 tcp1         774.50 Mbps  retr=642  cpu=72.3%
+  23 tcp4         803.93 Mbps  retr=4566  cpu=75.3%
+  23 tcp1_mss     817.74 Mbps  retr=693  cpu=73.6%
+  23 udp64         54.13 Mbps  jitter=0.017ms loss=45.81%  cpu=98.4%
+  23 udp512       404.05 Mbps  jitter=0.021ms loss=19.17%  cpu=98.1%
+  23 udp1200      854.40 Mbps  jitter=0.014ms loss=14.51%  cpu=98.0%
+  23 udp1472      997.40 Mbps  jitter=0.014ms loss=0.23%  cpu=84.6%
+  24 tcp1         767.92 Mbps  retr=791  cpu=68.6%
+  24 tcp4         805.02 Mbps  retr=4749  cpu=71.3%
+  24 tcp1_mss     793.88 Mbps  retr=857  cpu=69.8%
+  24 udp64         56.61 Mbps  jitter=0.014ms loss=43.33%  cpu=98.9%
+  24 udp512       432.66 Mbps  jitter=0.009ms loss=13.42%  cpu=97.9%
+  24 udp1200      958.04 Mbps  jitter=0.012ms loss=4.18%  cpu=92.2%
+  24 udp1472      998.60 Mbps  jitter=0.019ms loss=0.13%  cpu=85.9%
+  25 tcp1         842.04 Mbps  retr=669  cpu=72.9%
+  25 tcp4         786.61 Mbps  retr=4946  cpu=73.5%
+  25 tcp1_mss     754.03 Mbps  retr=516  cpu=71.0%
+  25 udp64         56.72 Mbps  jitter=0.013ms loss=43.22%  cpu=99.1%
+  25 udp512       426.46 Mbps  jitter=0.012ms loss=14.65%  cpu=97.3%
+  25 udp1200      873.80 Mbps  jitter=0.009ms loss=12.61%  cpu=91.8%
+  25 udp1472      998.03 Mbps  jitter=0.014ms loss=0.19%  cpu=87.1%
+  26 tcp1         755.13 Mbps  retr=1434  cpu=66.7%
+  26 tcp4         732.79 Mbps  retr=4696  cpu=69.6%
+  26 tcp1_mss     693.04 Mbps  retr=560  cpu=65.0%
+  26 udp64         54.15 Mbps  jitter=0.011ms loss=43.59%  cpu=95.3%
+  26 udp512       436.53 Mbps  jitter=0.012ms loss=12.61%  cpu=96.9%
+  26 udp1200      957.59 Mbps  jitter=0.011ms loss=4.16%  cpu=97.7%
+  26 udp1472      995.57 Mbps  jitter=0.013ms loss=0.43%  cpu=86.0%
+  27 tcp1         779.58 Mbps  retr=806  cpu=70.4%
+  27 tcp4         827.54 Mbps  retr=3720  cpu=78.9%
+  27 tcp1_mss     745.93 Mbps  retr=1104  cpu=68.2%
+  27 udp64         58.45 Mbps  jitter=0.016ms loss=41.48%  cpu=98.8%
+  27 udp512       449.46 Mbps  jitter=0.007ms loss=10.08%  cpu=97.0%
+  27 udp1200      848.42 Mbps  jitter=0.015ms loss=11.60%  cpu=89.9%
+  27 udp1472      996.50 Mbps  jitter=0.013ms loss=0.34%  cpu=83.5%
+  28 tcp1         817.24 Mbps  retr=839  cpu=74.4%
+  28 tcp4         836.36 Mbps  retr=3553  cpu=77.3%
+  28 tcp1_mss     771.38 Mbps  retr=594  cpu=69.4%
+  28 udp64         59.10 Mbps  jitter=0.010ms loss=40.84%  cpu=98.9%
+  28 udp512       431.32 Mbps  jitter=0.009ms loss=13.68%  cpu=98.1%
+  28 udp1200      916.67 Mbps  jitter=0.014ms loss=8.23%  cpu=96.6%
+  28 udp1472      994.27 Mbps  jitter=0.041ms loss=0.55%  cpu=85.2%
+  29 tcp1         789.51 Mbps  retr=515  cpu=72.5%
+  29 tcp4         754.62 Mbps  retr=5412  cpu=71.7%
+  29 tcp1_mss     766.77 Mbps  retr=742  cpu=69.8%
+  29 udp64         56.66 Mbps  jitter=0.021ms loss=43.29%  cpu=99.1%
+  29 udp512       443.36 Mbps  jitter=0.013ms loss=11.29%  cpu=97.2%
+  29 udp1200      919.91 Mbps  jitter=0.016ms loss=7.97%  cpu=95.8%
+  29 udp1472      996.34 Mbps  jitter=0.014ms loss=0.35%  cpu=84.2%
+
+[cleanup] ...
+
+raw results: /home/admin/projects/algo/bench/cmp_openvpn.jsonl
+===== 00:05:01 finished openvpn (rc=0) =====
+===== 00:05:01 building comparison =====
+# SDEx vs WireGuard vs OpenVPN — same lab, same procedure
+
+Source: `bench/cmp_{baseline,sdex,wireguard,openvpn}.jsonl`; first 3 iterations of each series discarded as warm-up.
+
+## Configurations compared
+
+| tunnel | inner subnet | device | transport | cipher | parallelism |
+|---|---|---|---|---|---|
+| sdex | 10.0.0.0/24 | tun0 | UDP/51820 | SDEx (BLAKE3-based) | 4 workers |
+| wireguard | 10.66.0.0/24 | sdexbench | UDP/51821 | ChaCha20-Poly1305 | kernel, multicore path |
+| openvpn | 10.67.0.0/24 | tun10 | UDP/1195 | AES-256-GCM (TLS 1.3 control channel) | single process |
+
+## Baseline (no tunnel)
+
+| path | scenario | n | mean Mbps | stdev | 95% CI |
+|---|---|---|---|---|---|
+| baseline_a | tcp1 | 7 | 15372.24 | 550.38 | 14964.51–15779.97 |
+| baseline_a | tcp4 | 7 | 18858.39 | 4803.71 | 15299.75–22417.03 |
+| baseline_a | tcp1_mss | 7 | 14748.28 | 640.45 | 14273.82–15222.73 |
+| baseline_a | udp64 | 7 | 99.90 | 0.08 | 99.84–99.97 |
+| baseline_a | udp512 | 7 | 499.89 | 0.05 | 499.85–499.93 |
+| baseline_a | udp1200 | 7 | 999.50 | 0.43 | 999.18–999.81 |
+| baseline_a | udp1472 | 7 | 999.65 | 0.10 | 999.58–999.73 |
+| baseline_b | tcp1 | 7 | 31032.97 | 3022.69 | 28793.73–33272.20 |
+| baseline_b | tcp4 | 7 | 36196.91 | 2469.22 | 34367.68–38026.13 |
+| baseline_b | tcp1_mss | 7 | 31121.45 | 3858.49 | 28263.04–33979.86 |
+| baseline_b | udp64 | 7 | 99.91 | 0.05 | 99.87–99.95 |
+| baseline_b | udp512 | 7 | 499.87 | 0.06 | 499.83–499.91 |
+| baseline_b | udp1200 | 7 | 999.68 | 0.24 | 999.51–999.86 |
+| baseline_b | udp1472 | 7 | 999.73 | 0.12 | 999.64–999.82 |
+
+## Through the tunnel (Mbps)
+
+| scenario | SDEx | WireGuard | OpenVPN | best |
+|---|---|---|---|---|
+| tcp1 | 199.61 | 4133.49 | 785.82 | wireguard |
+| tcp4 | 202.72 | 4123.43 | 789.34 | wireguard |
+| tcp1_mss | 202.13 | 4097.44 | 764.99 | wireguard |
+| udp64 | 44.21 | 99.77 | 56.50 | wireguard |
+| udp512 | 149.00 | 499.88 | 430.60 | wireguard |
+| udp1200 | 196.41 | 999.78 | 913.51 | wireguard |
+| udp1472 | 214.05 | 999.46 | 997.12 | wireguard |
+
+## Full statistics per tunnel
+
+| tunnel | scenario | n | mean | median | stdev | min | max | 95% CI | client CPU % | server CPU % | loss % | retrans |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| sdex | tcp1 | 27 | 199.61 | 199.98 | 5.89 | 184.51 | 209.68 | 197.39–201.83 | 91.1 | 95.0 | — | 147 |
+| sdex | tcp4 | 27 | 202.72 | 206.69 | 8.64 | 189.61 | 215.60 | 199.46–205.98 | 95.4 | 97.6 | — | 735 |
+| sdex | tcp1_mss | 27 | 202.13 | 202.52 | 5.79 | 190.19 | 212.79 | 199.95–204.31 | 91.8 | 98.1 | — | 110 |
+| sdex | udp64 | 27 | 44.21 | 43.53 | 4.35 | 36.41 | 54.31 | 42.57–45.85 | 97.8 | 97.6 | 55.2 | — |
+| sdex | udp512 | 27 | 149.00 | 147.90 | 11.95 | 131.64 | 173.86 | 144.49–153.51 | 98.7 | 98.5 | 70.0 | — |
+| sdex | udp1200 | 27 | 196.41 | 195.04 | 7.75 | 181.46 | 220.02 | 193.49–199.34 | 97.8 | 97.7 | 79.8 | — |
+| sdex | udp1472 | 27 | 214.05 | 209.75 | 11.85 | 199.15 | 239.98 | 209.58–218.51 | 98.5 | 98.1 | 78.1 | — |
+| wireguard | tcp1 | 27 | 4133.49 | 4144.63 | 99.02 | 3912.56 | 4308.09 | 4096.14–4170.84 | (148 sys) | — | — | 292 |
+| wireguard | tcp4 | 27 | 4123.43 | 4155.78 | 86.43 | 3907.32 | 4232.57 | 4090.83–4156.03 | (152 sys) | — | — | 1248 |
+| wireguard | tcp1_mss | 27 | 4097.44 | 4121.52 | 126.75 | 3825.56 | 4393.20 | 4049.63–4145.25 | (147 sys) | — | — | 269 |
+| wireguard | udp64 | 27 | 99.77 | 99.80 | 0.13 | 99.44 | 99.95 | 99.72–99.82 | (159 sys) | — | 0.2 | — |
+| wireguard | udp512 | 27 | 499.88 | 499.93 | 0.12 | 499.43 | 499.95 | 499.83–499.92 | (131 sys) | — | 0.0 | — |
+| wireguard | udp1200 | 27 | 999.78 | 999.85 | 0.24 | 998.62 | 999.90 | 999.69–999.87 | (124 sys) | — | 0.0 | — |
+| wireguard | udp1472 | 27 | 999.46 | 999.58 | 0.36 | 998.46 | 999.84 | 999.32–999.60 | (139 sys) | — | 0.0 | — |
+| openvpn | tcp1 | 27 | 785.82 | 785.33 | 24.01 | 723.17 | 842.04 | 776.76–794.88 | 70.3 | 73.2 | — | 808 |
+| openvpn | tcp4 | 27 | 789.34 | 789.01 | 27.48 | 714.82 | 836.36 | 778.98–799.71 | 74.2 | 75.0 | — | 4628 |
+| openvpn | tcp1_mss | 27 | 764.99 | 762.39 | 24.26 | 693.04 | 817.74 | 755.84–774.14 | 70.1 | 73.3 | — | 757 |
+| openvpn | udp64 | 27 | 56.50 | 56.96 | 2.71 | 50.74 | 63.24 | 55.48–57.52 | 98.0 | 96.3 | 42.9 | — |
+| openvpn | udp512 | 27 | 430.60 | 432.41 | 16.39 | 388.09 | 469.87 | 424.42–436.79 | 97.3 | 96.1 | 13.6 | — |
+| openvpn | udp1200 | 27 | 913.51 | 917.87 | 28.28 | 848.42 | 958.04 | 902.84–924.17 | 94.1 | 94.0 | 8.3 | — |
+| openvpn | udp1472 | 27 | 997.12 | 997.40 | 1.99 | 989.83 | 999.53 | 996.37–997.87 | 85.6 | 74.7 | 0.3 | — |
+
+## Relative to the no-tunnel path
+
+| scenario | baseline | SDEx | WireGuard | OpenVPN |
+|---|---|---|---|---|
+| tcp1 | 15372.24 | 1.30% | 26.89% | 5.11% |
+| tcp4 | 18858.39 | 1.07% | 21.87% | 4.19% |
+| tcp1_mss | 14748.28 | 1.37% | 27.78% | 5.19% |
+| udp64 | 99.90 | 44.26% | 99.86% | 56.55% |
+| udp512 | 499.89 | 29.81% | 100.00% | 86.14% |
+| udp1200 | 999.50 | 19.65% | 100.03% | 91.40% |
+| udp1472 | 999.65 | 21.41% | 99.98% | 99.75% |
+
+## Pairwise Mann-Whitney U (two-sided)
+
+| scenario | pair | U | p | significant at 0.05 |
+|---|---|---|---|---|
+| tcp1 | sdex vs wireguard | 0.0 | 0.0000 | yes |
+| tcp1 | sdex vs openvpn | 0.0 | 0.0000 | yes |
+| tcp1 | wireguard vs openvpn | 729.0 | 0.0000 | yes |
+| tcp4 | sdex vs wireguard | 0.0 | 0.0000 | yes |
+| tcp4 | sdex vs openvpn | 0.0 | 0.0000 | yes |
+| tcp4 | wireguard vs openvpn | 729.0 | 0.0000 | yes |
+| tcp1_mss | sdex vs wireguard | 0.0 | 0.0000 | yes |
+| tcp1_mss | sdex vs openvpn | 0.0 | 0.0000 | yes |
+| tcp1_mss | wireguard vs openvpn | 729.0 | 0.0000 | yes |
+| udp64 | sdex vs wireguard | 0.0 | 0.0000 | yes |
+| udp64 | sdex vs openvpn | 8.0 | 0.0000 | yes |
+| udp64 | wireguard vs openvpn | 729.0 | 0.0000 | yes |
+| udp512 | sdex vs wireguard | 0.0 | 0.0000 | yes |
+| udp512 | sdex vs openvpn | 0.0 | 0.0000 | yes |
+| udp512 | wireguard vs openvpn | 729.0 | 0.0000 | yes |
+| udp1200 | sdex vs wireguard | 0.0 | 0.0000 | yes |
+| udp1200 | sdex vs openvpn | 0.0 | 0.0000 | yes |
+| udp1200 | wireguard vs openvpn | 729.0 | 0.0000 | yes |
+| udp1472 | sdex vs wireguard | 0.0 | 0.0000 | yes |
+| udp1472 | sdex vs openvpn | 0.0 | 0.0000 | yes |
+| udp1472 | wireguard vs openvpn | 693.0 | 0.0000 | yes |
+
+## Latency (ping, idle tunnel)
+
+| tunnel | packets | summary |
+|---|---|---|
+| sdex | 100 | 100 packets transmitted, 100 received, 0% packet loss, time 2309ms / rtt min/avg/max/mdev = 0.515/0.784/1.480/0.202 ms |
+| wireguard | 100 | 100 packets transmitted, 100 received, 0% packet loss, time 2288ms / rtt min/avg/max/mdev = 0.447/0.777/1.712/0.262 ms |
+| openvpn | 100 | 100 packets transmitted, 100 received, 0% packet loss, time 2248ms / rtt min/avg/max/mdev = 0.553/0.889/1.925/0.233 ms |
+
+written: /home/admin/projects/algo/bench/cmp_comparison.md
+===== 00:05:01 all done =====
